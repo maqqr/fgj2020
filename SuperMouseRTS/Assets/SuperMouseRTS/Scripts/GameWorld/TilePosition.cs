@@ -8,11 +8,11 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
     [Serializable]
     public struct TilePosition : IComponentData
     {
-        public int2 Position;
+        public int2 Value;
 
         public TilePosition(int2 position)
         {
-            Position = position;
+            Value = position;
         }
     }
 }

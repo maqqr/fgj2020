@@ -12,9 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73dc088a57890bf47a3c06d195d032ba, type: 3}
   m_Name: Data
   m_EditorClassIdentifier: 
-  tilesHorizontally: 15
-  tilesVertically: 10
+  TilesHorizontally: 15
+  TilesVertically: 10
   TilePrefabs:
   - TileContent: 0
     TilePrefab: {fileID: 7767969080429329121, guid: a4c0e57bdf4d99549ab534f5fba2fe85,
       type: 3}
+  - TileContent: 1
+    TilePrefab: {fileID: 7767969080429329121, guid: b8f65b188f81d2d4b8e694a0c9fd7082,
+      type: 3}
+  - TileContent: 2
+    TilePrefab: {fileID: 5672865456435132913, guid: 9edec842c750eaf418334b1369bc6f67,
+      type: 3}
+  - TileContent: 3
+    TilePrefab: {fileID: 5628718853427771372, guid: 7e8e03565516d0249a38409820a1f8b5,
+      type: 3}
+  - TileContent: 4
+    TilePrefab: {fileID: 169682469635925599, guid: 05abd9c0084148b42a0ae236a4b1e4d7,
+      type: 3}
+  PercentileOfTilesResources: 10
+  PercentileOfTilesRuins: 10
+  PercentileOfTilesObstacles: 5
+  TileSize: 1.5
+  Players: 2
