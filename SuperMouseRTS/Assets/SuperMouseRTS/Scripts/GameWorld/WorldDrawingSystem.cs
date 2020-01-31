@@ -124,20 +124,19 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
                     {
-                        var tileOrigin = new Vector3(position.Position.x, 0f, position.Position.y);
+                        var tileOrigin = new Vector3(position.Value.x, 0f, position.Value.y);
                         var tileMatrix = Matrix4x4.Translate(tileOrigin);
 
                         foreach (var mesh in meshes)
                         {
                             var matrix = tileMatrix * mesh.Transform;
-                            //Graphics.DrawMesh(mesh.Mesh, , mesh.Material, 0);
 
                             var key = new MeshMaterialPair(mesh.Mesh, mesh.Material);
 
                             if (drawList.ContainsKey(key))
                             {
                                 var arr = drawList[key];
-                                System.Array.Resize(ref arr, arr.Length + 1);
+                                System.Array.Resize(ref arr, arr.Length + 1); // This might destroy the performance
                                 arr[arr.Length - 1] = matrix;
                                 drawList[key] = arr;
                             }
