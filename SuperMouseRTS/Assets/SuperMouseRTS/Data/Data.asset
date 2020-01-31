@@ -14,3 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilesHorizontally: 15
   tilesVertically: 10
+  TilePrefabs:
+  - TileContent: 0
+    TilePrefab: {fileID: 7767969080429329121, guid: a4c0e57bdf4d99549ab534f5fba2fe85,
+      type: 3}
