@@ -102,12 +102,24 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             }
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDependencies)
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            TryDisposeCache();
+        }
+
+        private void TryDisposeCache()
         {
             if (tileCache.IsCreated)
             {
                 tileCache.Dispose();
             }
+        }
+
+        protected override JobHandle OnUpdate(JobHandle inputDependencies)
+        {
+            TryDisposeCache();
             tileCache = new NativeArray<Tile>(settings.tilesHorizontally * settings.tilesVertically, Allocator.TempJob);
 
             var job = new WorldGenerationJob();

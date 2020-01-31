@@ -10,7 +10,7 @@ public class GameManagerSystem : ComponentSystem
 {
     private GameManager manager;
 
-    protected override void OnCreateManager()
+    protected override void OnCreate()
     {
         base.OnCreateManager();
         manager = new GameManager();
@@ -18,7 +18,4 @@ public class GameManagerSystem : ComponentSystem
     }
 
 
-    protected override void OnUpdate()
-    {
-    }
 }
