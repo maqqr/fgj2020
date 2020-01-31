@@ -190,8 +190,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             var ruinsTiles = settings.PercentileOfTilesRuins * 0.01f * totalTiles;
             var obstacles = settings.PercentileOfTilesObstacles * 0.01f * totalTiles;
 
-            TryGenerateTileOfType(rand, resourceTiles, TileContent.Resources, settings.TilesHorizontally, settings.TilesVertically);
             TryGenerateTileOfType(rand, ruinsTiles, TileContent.Ruins, settings.TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, resourceTiles, TileContent.Resources, settings.TilesHorizontally, settings.TilesVertically);
             TryGenerateTileOfType(rand, obstacles, TileContent.Obstacle, settings.TilesHorizontally, settings.TilesVertically);
 
             return world;
