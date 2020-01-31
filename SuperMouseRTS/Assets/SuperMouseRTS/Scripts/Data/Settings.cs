@@ -3,7 +3,11 @@
 [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Create Settings ScriptableObject", order = 1)]
 public class Settings : ScriptableObject
 {
-    public int tilesHorizontally = 15;
-    public int tilesVertically = 10;
+    public int TilesHorizontally = 15;
+    public int TilesVertically = 10;
 
+    public float PercentileOfTilesResources = 10;
+    public float PercentileOfTilesRuins = 10;
+
+    public int PercentileOfTilesObstacles = 5;
 }
