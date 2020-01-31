@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -82,24 +83,89 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         {
             worldMap = GenerateWorld();
 
+            AssignPlayerStarts(worldMap);
+
             PopulateWorld(worldMap);
 
             Enabled = true;
         }
 
+        private void AssignPlayerStarts(TileContent[,] worldMap)
+        {
+            List<int2> ruinsLocations = new List<int2>();
+
+            Map((tileContent, x, y) =>
+            {
+                if (tileContent == TileContent.Ruins)
+                {
+                    ruinsLocations.Add(new int2(x, y));
+                }
+            });
+
+            
+            for (int i = 0; i < settings.Players; i++)
+            {
+                AssignPlayerBuilding(ruinsLocations);
+            }
+        }
+
+        private void AssignPlayerBuilding(List<int2> ruinsLocations)
+        {
+            float distanceCombined = 0;
+            Vector3 center = WorldConversionTools.WorldCenter(settings.TilesHorizontally, settings.TilesVertically, settings.TileSize);
+
+            ruinsLocations.ForEach(ruin =>
+            {
+                distanceCombined += Vector3.Distance(center, WorldConversionTools.WorldToUnityCoordinate(ruin.x, ruin.y, settings.TileSize));
+            });
+
+
+            distanceCombined /= ruinsLocations.Count;
+
+            List<int2> overAverage = ruinsLocations.FindAll((x) => Vector3.Distance(center, WorldConversionTools.WorldToUnityCoordinate(x, settings.TileSize)) > distanceCombined);
+
+            int2 playerLocation = overAverage[UnityEngine.Random.Range(0, overAverage.Count)];
+
+            this[playerLocation.x, playerLocation.y] = TileContent.Building;
+            ruinsLocations.Remove(playerLocation);
+        }
+
         private void PopulateWorld(TileContent[,] worldMap)
         {
-            for (int i = 0; i < worldMap.GetLength(0); i++)
+            int playerID = 1;
+
+            Map((TileContent, x, y) =>
             {
-                for (int j = 0; j < worldMap.GetLength(1); j++)
+                Entity ent = EntityManager.CreateEntity(typeof(Tile), typeof(TilePosition));
+                EntityManager.SetComponentData(ent, new Tile(this[x, y]));
+                EntityManager.SetComponentData(ent, new TilePosition(new int2(x, y)));
+
+                if(TileContent == TileContent.Building)
                 {
-                    Entity ent = EntityManager.CreateEntity(typeof(Tile), typeof(TilePosition));
-                    EntityManager.SetComponentData(ent, new Tile(worldMap[i, j]));
-                    EntityManager.SetComponentData(ent, new TilePosition(new int2(j, i)));
+                    PlayerOwner owner = new PlayerOwner(playerID++);
+                    if (EntityManager.HasComponent<PlayerOwner>(ent))
+                    {
+                        EntityManager.SetComponentData<PlayerOwner>(ent, owner);
+                    }
+                    else
+                    {
+                        EntityManager.AddComponentData<PlayerOwner>(ent, owner);
+                    }
+                }
+            });
+        }
+
+        private void Map(Action<TileContent, int, int> predicate)
+        {
+            for (int y = 0; y < worldMap.GetLength(0); y++)
+            {
+                for (int x = 0; x < worldMap.GetLength(1); x++)
+                {
+                    predicate(this[x, y], x, y);
                 }
             }
-
         }
+
 
         private TileContent[,] GenerateWorld()
         {
@@ -131,7 +197,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             return world;
         }
 
-        private void TryGenerateTileOfType(Unity.Mathematics.Random rand, float tiles, TileContent tileContent, int tilesHorizontally, int tilesVertically, int maxTries = 100)
+        private void TryGenerateTileOfType(Unity.Mathematics.Random rand, float tiles, TileContent tileContent, int tilesHorizontally, int tilesVertically, List<int2> positions = null, int maxTries = 100)
         {
             
             for (int i = 0; i < tiles; i++)
@@ -146,6 +212,10 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 while (this[pos.x, pos.y] != TileContent.Empty && tries < maxTries);
 
                 this[pos.x, pos.y] = tileContent;
+                if(positions != null)
+                {
+                    positions.Add(pos);
+                }
             }
         }
 
