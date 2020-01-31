@@ -17,5 +17,7 @@ public class GameManagerSystem : ComponentSystem
         manager.Initialize();
     }
 
-
+    protected override void OnUpdate()
+    {
+    }
 }

@@ -5,16 +5,44 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 using static Unity.Mathematics.math;
 
 namespace Assets.SuperMouseRTS.Scripts.GameWorld
 {
+    [UpdateInGroup(typeof(InitializationSystemGroup))]
     public class WorldStatusSystem : JobComponentSystem
     {
         private TileContent[,] worldMap;
+        private Settings settings;
 
         private NativeArray<Tile> tileCache;
-        private Settings settings;
+        private JobHandle latestJobHandle;
+
+        public NativeArray<Tile> TileCache
+        {
+            get
+            {
+                if (!tileCache.IsCreated)
+                {
+                    throw new UnityException("Tile cache was not created before!");
+                }
+                return tileCache;
+            }
+        }
+        public JobHandle LatestJobHandle
+        {
+            get
+            {
+                return latestJobHandle;
+            }
+            set
+            {
+                latestJobHandle = value;
+            }
+        }
+
+
 
 
         protected override void OnCreate()
@@ -79,14 +107,6 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         }
 
 
-        // This declares a new kind of job, which is a unit of work to do.
-        // The job is declared as an IJobForEach<Translation, Rotation>,
-        // meaning it will process all entities in the world that have both
-        // Translation and Rotation components. Change it to process the component
-        // types you want.
-        //
-        // The job is also tagged with the BurstCompile attribute, which means
-        // that the Burst compiler will optimize it for the best performance.
         [BurstCompile]
         struct WorldGenerationJob : IJobForEachWithEntity<Tile, TilePosition>
         {
@@ -120,6 +140,11 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
             TryDisposeCache();
+            if (!latestJobHandle.IsCompleted)
+            {
+                latestJobHandle.Complete();
+            }
+
             tileCache = new NativeArray<Tile>(settings.tilesHorizontally * settings.tilesVertically, Allocator.TempJob);
 
             var job = new WorldGenerationJob();
@@ -128,7 +153,9 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             job.tilesHorizontally = settings.tilesHorizontally;
 
             // Now that the job is set up, schedule it to be run. 
-            return job.Schedule(this, inputDependencies);
+            latestJobHandle = job.Schedule(this, inputDependencies);
+
+            return latestJobHandle;
         }
     }
 }
