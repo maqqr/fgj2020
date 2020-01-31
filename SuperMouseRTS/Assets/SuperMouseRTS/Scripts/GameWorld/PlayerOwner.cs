@@ -7,4 +7,9 @@ using Unity.Mathematics;
 public struct PlayerOwner : IComponentData
 {
     public int PlayerID;
+
+    public PlayerOwner(int playerID)
+    {
+        PlayerID = playerID;
+    }
 }

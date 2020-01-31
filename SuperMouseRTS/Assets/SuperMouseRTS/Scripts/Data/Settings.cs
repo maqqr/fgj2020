@@ -20,4 +20,6 @@ public class Settings : ScriptableObject
     public float PercentileOfTilesObstacles = 5;
 
     public float TileSize = 1.5f;
+
+    public int Players = 2;
 }
