@@ -77,7 +77,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             {
                 if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
                 {
-                    var tileOrigin = new Vector3(position.Position.x, 0f, position.Position.y);
+                    var tileOrigin = new Vector3(position.Value.x, 0f, position.Value.y);
                     var tileMatrix = Matrix4x4.Translate(tileOrigin);
 
                     foreach (var mesh in meshes)

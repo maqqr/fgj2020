@@ -15,6 +15,8 @@ public class GameManagerSystem : ComponentSystem
         base.OnCreateManager();
         manager = new GameManager();
         manager.Initialize();
+
+
     }
 
     protected override void OnUpdate()

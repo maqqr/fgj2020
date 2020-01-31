@@ -142,14 +142,14 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
                 if(TileContent == TileContent.Building)
                 {
-                    PlayerOwner owner = new PlayerOwner(playerID++);
-                    if (EntityManager.HasComponent<PlayerOwner>(ent))
+                    PlayerID owner = new PlayerID(playerID++);
+                    if (EntityManager.HasComponent<PlayerID>(ent))
                     {
-                        EntityManager.SetComponentData<PlayerOwner>(ent, owner);
+                        EntityManager.SetComponentData<PlayerID>(ent, owner);
                     }
                     else
                     {
-                        EntityManager.AddComponentData<PlayerOwner>(ent, owner);
+                        EntityManager.AddComponentData<PlayerID>(ent, owner);
                     }
                 }
             });
@@ -232,7 +232,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             public void Execute(Entity ent, int index, [ReadOnly] ref Tile tile, [ReadOnly] ref TilePosition pos)
             {
-                insertHere[pos.Position.x + tilesHorizontally * pos.Position.y] = tile;
+                insertHere[pos.Value.x + tilesHorizontally * pos.Value.y] = tile;
             }
         }
 

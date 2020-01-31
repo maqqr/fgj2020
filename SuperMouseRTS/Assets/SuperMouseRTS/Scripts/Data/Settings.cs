@@ -22,4 +22,5 @@ public class Settings : ScriptableObject
     public float TileSize = 1.5f;
 
     public int Players = 2;
+    public int StartingResources = 100;
 }
