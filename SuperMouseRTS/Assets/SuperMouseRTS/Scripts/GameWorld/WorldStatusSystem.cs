@@ -42,7 +42,17 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             }
         }
 
-
+        private TileContent this[int x, int y]
+        {
+            get
+            {
+                return worldMap[y, x];
+            }
+            set
+            {
+                worldMap[y, x] = value;
+            }
+        }
 
 
         protected override void OnCreate()
@@ -93,18 +103,52 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         private TileContent[,] GenerateWorld()
         {
-            TileContent[,] world = new TileContent[settings.tilesVertically, settings.tilesHorizontally];
 
-            for (int i = 0; i < world.GetLength(0); i++)
+            int totalTiles = settings.TilesVertically * settings.TilesHorizontally;
+            TileContent[,] world = new TileContent[settings.TilesVertically, settings.TilesHorizontally];
+
+            for (int y = 0; y < world.GetLength(0); y++)
             {
-                for (int j = 0; j < world.GetLength(1); j++)
+                for (int x = 0; x < world.GetLength(1); x++)
                 {
-                    world[i, j] = TileContent.Empty;
+                    world[y, x] = TileContent.Empty;
                 }
             }
 
+            worldMap = world;
+
+            var rand = new Unity.Mathematics.Random();
+            rand.InitState();
+
+            var resourceTiles = settings.PercentileOfTilesResources * 0.01f * totalTiles;
+            var ruinsTiles = settings.PercentileOfTilesRuins * 0.01f * totalTiles;
+            var obstacles = settings.PercentileOfTilesObstacles * 0.01f * totalTiles;
+
+            TryGenerateTileOfType(rand, resourceTiles, TileContent.Resources, settings.TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, ruinsTiles, TileContent.Ruins, settings.TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, obstacles, TileContent.Obstacle, settings.TilesHorizontally, settings.TilesVertically);
+
             return world;
         }
+
+        private void TryGenerateTileOfType(Unity.Mathematics.Random rand, float tiles, TileContent tileContent, int tilesHorizontally, int tilesVertically, int maxTries = 100)
+        {
+            
+            for (int i = 0; i < tiles; i++)
+            {
+                int2 pos;
+                int tries = 0;
+                do
+                {
+                    pos = new int2(rand.NextInt(0, tilesHorizontally), rand.NextInt(0, tilesVertically));
+                    tries++;
+                }
+                while (this[pos.x, pos.y] != TileContent.Empty && tries < maxTries);
+
+                this[pos.x, pos.y] = tileContent;
+            }
+        }
+
 
 
         [BurstCompile]
@@ -114,7 +158,6 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             public NativeArray<Tile> insertHere;
             [ReadOnly]
             public int tilesHorizontally;
-
 
             public void Execute(Entity ent, int index, [ReadOnly] ref Tile tile, [ReadOnly] ref TilePosition pos)
             {
@@ -145,12 +188,12 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 latestJobHandle.Complete();
             }
 
-            tileCache = new NativeArray<Tile>(settings.tilesHorizontally * settings.tilesVertically, Allocator.TempJob);
+            tileCache = new NativeArray<Tile>(settings.TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
 
             var job = new WorldGenerationJob();
 
             job.insertHere = tileCache;
-            job.tilesHorizontally = settings.tilesHorizontally;
+            job.tilesHorizontally = settings.TilesHorizontally;
 
             // Now that the job is set up, schedule it to be run. 
             latestJobHandle = job.Schedule(this, inputDependencies);
