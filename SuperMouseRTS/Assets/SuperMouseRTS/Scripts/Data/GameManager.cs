@@ -2,8 +2,9 @@
 using System.Collections;
 using UnityEngine.AddressableAssets;
 using System;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
-public class GameManager : MonoBehaviour
+public class GameManager
 {
     private static GameManager instance;
     public static GameManager Instance
@@ -23,24 +24,34 @@ public class GameManager : MonoBehaviour
             return loadedSettings;
         }
     }
+    public bool IsSettingsLoaded
+    {
+        get
+        {
+            return loadedSettings != null;
+        }
+    }
 
 
-    private void Awake()
+    public Action<Settings> OnSettingsLoaded;
+
+    public GameManager()
     {
         instance = this;
     }
 
 
-    // Use this for initialization
-    void Start()
+    public void Initialize()
     {
-        Addressables.LoadAssetsAsync<Settings>(settingsDataAddress, SettingsLoaded);
-
+        var operation = Addressables.LoadAssetAsync<Settings>(settingsDataAddress);
+        operation.Completed += SettingsLoaded;
     }
 
-    private void SettingsLoaded(Settings obj)
+
+
+    private void SettingsLoaded(AsyncOperationHandle<Settings> obj)
     {
-        var settings = obj as Settings;
+        var settings = obj.Result;
 
         if(settings == null)
         {
@@ -48,5 +59,7 @@ public class GameManager : MonoBehaviour
         }
 
         loadedSettings = settings;
+
+        OnSettingsLoaded?.Invoke(loadedSettings);
     }
 }
