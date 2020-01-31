@@ -8,6 +8,7 @@ public class Settings : ScriptableObject
 
     public float PercentileOfTilesResources = 10;
     public float PercentileOfTilesRuins = 10;
+    public float PercentileOfTilesObstacles = 5;
 
-    public int PercentileOfTilesObstacles = 5;
+    public float TileSize = 1.5f;
 }

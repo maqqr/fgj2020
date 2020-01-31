@@ -159,7 +159,6 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             [ReadOnly]
             public int tilesHorizontally;
 
-
             public void Execute(Entity ent, int index, [ReadOnly] ref Tile tile, [ReadOnly] ref TilePosition pos)
             {
                 insertHere[pos.Position.x + tilesHorizontally * pos.Position.y] = tile;
