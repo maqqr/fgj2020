@@ -225,6 +225,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         struct WorldGenerationJob : IJobForEachWithEntity<Tile, TilePosition>
         {
             [WriteOnly]
+            [NativeDisableParallelForRestriction]
             public NativeArray<Tile> insertHere;
             [ReadOnly]
             public int tilesHorizontally;
