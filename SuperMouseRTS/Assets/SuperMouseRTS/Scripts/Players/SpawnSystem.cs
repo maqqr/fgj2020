@@ -73,7 +73,7 @@ public class SpawnSystem : JobComponentSystem
                 entityCommandBuffer.SetComponent(index, e, new OreCapacity(0, capacity));
                 entityCommandBuffer.SetComponent(index, e, new UnitTarget(tile, Priorities.NotSet, AIOperation.Unassigned));
                 entityCommandBuffer.SetComponent(index, e, new Rotation() { Value = new quaternion(0, 0f, 0f, 1f) });
-                entityCommandBuffer.SetComponent(index, e, new NearestUnit() { DistToAlly = float.MaxValue, DistToEnemy = float.MaxValue });
+                entityCommandBuffer.SetComponent(index, e, new NearestUnit());
 
                 timer.SpawnsOrdered--;
                 timer.TimeLeftToSpawn = UnitSpawnTime;
