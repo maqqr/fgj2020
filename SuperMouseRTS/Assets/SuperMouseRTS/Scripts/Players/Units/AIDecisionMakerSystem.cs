@@ -12,7 +12,7 @@ using static Unity.Mathematics.math;
 public class AIDecisionMakerSystem : JobComponentSystem
 {
 
-    public float TimeBetweenUpdates = 0.1f;
+    public float TimeBetweenUpdates = 1.0f;
     private float timePassed = 0f;
     private EntityQuery query;
 
