@@ -14,6 +14,14 @@ public class AIDecisionMakerSystem : JobComponentSystem
 
     public float TimeBetweenUpdates = 0.1f;
     private float timePassed = 0f;
+    private EntityQuery query;
+
+    protected override void OnCreate()
+    {
+        base.OnCreate();
+        query = EntityManager.CreateEntityQuery(typeof(PlayerID), typeof(OreResources), typeof(TilePosition));
+    }
+
 
     [BurstCompile]
     struct AIDecisionMakerJob : IJobForEach<Translation, UnitTarget, OwnerBuilding>
@@ -54,7 +62,6 @@ public class AIDecisionMakerSystem : JobComponentSystem
 
         var job = new AIDecisionMakerJob();
 
-        EntityQuery query = EntityManager.CreateEntityQuery(typeof(PlayerID), typeof(OreResources), typeof(TilePosition));
         NativeArray<TilePosition> owners = query.ToComponentDataArray<TilePosition>(Allocator.TempJob);
         NativeArray<TilePosition> targets = new NativeArray<TilePosition>(owners.Length, Allocator.TempJob);
 

@@ -11,6 +11,7 @@ using static Unity.Mathematics.math;
 
 namespace Assets.SuperMouseRTS.Scripts.GameWorld
 {
+    [AlwaysUpdateSystem]
     [UpdateInGroup(typeof(InitializationSystemGroup))]
     public class WorldStatusSystem : JobComponentSystem
     {
@@ -21,7 +22,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private JobHandle latestJobHandle;
 
         private EntityArchetype buildingArchetype;
-        private EndSimulationEntityCommandBufferSystem entityCommandBuffer;
+        private EndInitializationEntityCommandBufferSystem entityCommandBuffer;
+        private EntityQuery allUnitsQuery;
 
         public NativeArray<Tile> TileCache
         {
@@ -81,8 +83,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 this.settings = GameManager.Instance.LoadedSettings;
                 InitializeSystem();
             }
-            entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
-            buildingArchetype = EntityManager.CreateArchetype(typeof(Health), typeof(Tile), typeof(TilePosition), typeof(PlayerID));
+            entityCommandBuffer = World.GetOrCreateSystem<EndInitializationEntityCommandBufferSystem>();
+            buildingArchetype = EntityManager.CreateArchetype(typeof(Tile), typeof(TilePosition));
         }
 
 
@@ -100,6 +102,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             AssignPlayerStarts(worldMap);
 
             PopulateWorld(worldMap);
+
+            var queryDesc = new EntityQueryDesc
+            {
+                All = new ComponentType[] { ComponentType.ReadOnly<OwnerBuilding>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<PlayerID>() },
+                Options = EntityQueryOptions.Default,
+            };
+            allUnitsQuery = GetEntityQuery(queryDesc);
 
             Enabled = true;
         }
@@ -283,6 +292,90 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         }
 
 
+        [BurstCompile]
+        struct RepairBuilding : IJobForEachWithEntity<Tile, TilePosition, Health>
+        {
+            [ReadOnly]
+            public NativeArray<Entity> OtherUnits;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<Translation> OtherPositions;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<PlayerID> OtherIds;
+            [ReadOnly]
+            public int Players;
+            [ReadOnly]
+            public float TileSize;
+            [ReadOnly]
+            public int StartingResources;
+
+            public EntityCommandBuffer.Concurrent concurrentBuffer;
+            public void Execute(Entity ent, int index, ref Tile tile, [ReadOnly] ref TilePosition pos, [ReadOnly] ref Health health)
+            {
+
+                if (tile.tile == TileContent.Ruins && health.Value >= health.Maximum)
+                {
+                    tile.tile = TileContent.Building;
+   
+                    float3 ruinsUnityLocation = WorldCoordinateTools.UnityCoordinateAsWorld(pos.Value.x, pos.Value.y);
+
+                    NativeArray<int> closeOnesCounts = new NativeArray<int>(Players, Allocator.Temp);
+
+                    for (int i = 0; i < OtherPositions.Length; i++)
+                    {
+                        if(math.distance(ruinsUnityLocation, OtherPositions[i].Value) <= TileSize)
+                        {
+                            closeOnesCounts[OtherIds[i].Value - 1]++;
+                        }
+                    }
+
+                    int winningIndex = 0;
+                    for (int i = 0; i < closeOnesCounts.Length; i++)
+                    {
+                        if(closeOnesCounts[winningIndex] < closeOnesCounts[i])
+                        {
+                            winningIndex = i;
+                        }
+                    }
+                    concurrentBuffer.AddComponent(index, ent, new PlayerID(winningIndex + 1));
+                    concurrentBuffer.AddComponent(index, ent, new OreResources(StartingResources));
+                    concurrentBuffer.AddComponent(index, ent, new SpawnScheduler(0, -1));
+                    concurrentBuffer.SetComponent(index, ent, new Health(health.Maximum, health.Maximum));
+                }
+            }
+        }
+
+
+        [BurstCompile]
+        struct RuinateBuildingJob : IJobForEachWithEntity<PlayerID, Health, Tile, TilePosition>
+        {
+            public EntityCommandBuffer.Concurrent entityCommandBuffer;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<Entity> PoorPeasants;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<OwnerBuilding> PeasantOwners;
+
+            public void Execute(Entity ent, int index, ref PlayerID id, [ReadOnly] ref Health health, ref Tile tile, [ReadOnly] ref TilePosition pos)
+            {
+                if(health.Value <= 0)
+                {
+                    entityCommandBuffer.RemoveComponent<PlayerID>(index, ent);
+                    entityCommandBuffer.RemoveComponent<OreResources>(index, ent);
+                    entityCommandBuffer.RemoveComponent<SpawnScheduler>(index, ent);
+                    tile.tile = TileContent.Ruins;
+
+                    for (int i = 0; i < PeasantOwners.Length; i++)
+                    {
+                        if(math.distance(PeasantOwners[i].owner.Value,pos.Value) < 0.01f)
+                        {
+                            entityCommandBuffer.DestroyEntity(index, PoorPeasants[i]);
+                        }
+                    }
+                }
+
+            }
+        }
+
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -300,24 +393,51 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         protected override JobHandle OnUpdate(JobHandle inputDependencies)
         {
             TryDisposeCache();
-            if (!latestJobHandle.IsCompleted)
+            //if (!latestJobHandle.IsCompleted)
+            //{
+            //    latestJobHandle.Complete();
+            //}
+
+            tileCache = new NativeArray<Tile>(settings.TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
+
+            var job = new GenerateTileCache()
             {
-                latestJobHandle.Complete();
-            }
+                insertHere = tileCache,
+                tilesHorizontally = settings.TilesHorizontally
+            };
 
             var removeResourcesJob = new RemoveEmptyResourceJob
             {
                 entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
             };
 
+            var unitEntityArray = allUnitsQuery.ToEntityArray(Allocator.TempJob);
+            var positionArray = allUnitsQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
+            var playerIdArray = allUnitsQuery.ToComponentDataArray<PlayerID>(Allocator.TempJob);
+            var owners = allUnitsQuery.ToComponentDataArray<OwnerBuilding>(Allocator.TempJob);
+
+            var repairBuildingJob = new RepairBuilding
+            {
+                OtherUnits = unitEntityArray,
+                OtherPositions = positionArray,
+                OtherIds = playerIdArray,
+                Players = settings.Players,
+                TileSize = GameManager.TILE_SIZE,
+                StartingResources = settings.StartingResources,
+                concurrentBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            };
+
             inputDependencies = removeResourcesJob.Schedule(this, inputDependencies);
 
-            tileCache = new NativeArray<Tile>(settings.TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
+            inputDependencies = repairBuildingJob.Schedule(this, inputDependencies);
 
-            var job = new GenerateTileCache();
-
-            job.insertHere = tileCache;
-            job.tilesHorizontally = settings.TilesHorizontally;
+            var ruinateBuildingJob = new RuinateBuildingJob
+            {
+                PoorPeasants = unitEntityArray,
+                PeasantOwners = owners,
+                entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            };
+            inputDependencies = ruinateBuildingJob.Schedule(this, inputDependencies);
 
             // Now that the job is set up, schedule it to be run. 
             latestJobHandle = job.Schedule(this, inputDependencies);

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73dc088a57890bf47a3c06d195d032ba, type: 3}
   m_Name: Data
   m_EditorClassIdentifier: 
-  TilesHorizontally: 15
-  TilesVertically: 10
+  TilesHorizontally: 20
+  TilesVertically: 20
   TilePrefabs:
   - TileContent: 0
     TilePrefab: {fileID: 5341504868376317154, guid: a4c0e57bdf4d99549ab534f5fba2fe85,
@@ -35,6 +35,7 @@ MonoBehaviour:
   UnitMaterials:
   - {fileID: 2100000, guid: 95ae1593f761ce54e92bf5d9f99985f0, type: 2}
   - {fileID: 2100000, guid: 63f7a599ac3d08641bf519fa841d623a, type: 2}
+  BuildingMaterials: []
   PercentileOfTilesResources: 10
   PercentileOfTilesRuins: 10
   PercentileOfTilesObstacles: 5

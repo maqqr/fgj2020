@@ -41,6 +41,7 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Unassigned:
                     break;
                 case AIOperation.Attack:
+                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, -2);
                     break;
                 case AIOperation.Collect:
                     if (capacity.Value >= capacity.Maximum)
@@ -66,17 +67,7 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Repair:
                     if (canAct)
                     {
-                        float dist = math.distance(trans.Value, WorldCoordinateTools.WorldToUnityCoordinate(target.Value.Value));
-                        if (dist < operationCapability.Value)
-                        {
-                            Entity ev = entityCommandBuffer.CreateEntity(index);
-                            entityCommandBuffer.AddComponent<UnitEvent>(index, ev);
-                            entityCommandBuffer.AddComponent<TilePosition>(index, ev);
-                            entityCommandBuffer.AddComponent<Health>(index, ev);
-                            entityCommandBuffer.SetComponent(index, ev, target.Value);
-                            entityCommandBuffer.SetComponent(index, ev, new Health(10, 0));
-                            usedOperation = true;
-                        }
+                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, 1);
                     }
                     break;
                 default:
@@ -91,6 +82,23 @@ public class UnitAISystem : JobComponentSystem
             float2 vec = new float2(targetPosition.x * GameManager.TILE_SIZE - trans.Value.x, targetPosition.y * GameManager.TILE_SIZE - trans.Value.z);
             movement.Value = math.normalizesafe(vec) * speed;
 
+        }
+
+        private bool HealthEventCheck(int index, Translation trans, UnitTarget target, OperationCapability operationCapability, bool usedOperation, int healthChange)
+        {
+            float dist = math.distance(trans.Value, WorldCoordinateTools.WorldToUnityCoordinate(target.Value.Value));
+            if (dist < operationCapability.Value)
+            {
+                Entity ev = entityCommandBuffer.CreateEntity(index);
+                entityCommandBuffer.AddComponent<UnitEvent>(index, ev);
+                entityCommandBuffer.AddComponent<TilePosition>(index, ev);
+                entityCommandBuffer.AddComponent<Health>(index, ev);
+                entityCommandBuffer.SetComponent(index, ev, target.Value);
+                entityCommandBuffer.SetComponent(index, ev, new Health(healthChange, 0));
+                usedOperation = true;
+            }
+
+            return usedOperation;
         }
 
         private bool HandleOreVicinity(Entity ent, int index, Translation trans, int oreChange, OperationCapability range, int2 targetPosition)
