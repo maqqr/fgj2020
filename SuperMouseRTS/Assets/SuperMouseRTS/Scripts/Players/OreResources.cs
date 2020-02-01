@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 [Serializable]
-public struct OreResources : IComponentData
+public struct OreResources : IComponentData, IValue
 {
     public int Value;
 
@@ -12,4 +12,6 @@ public struct OreResources : IComponentData
     {
         Value = value;
     }
+
+    public int ValueProperty { get => Value; set => Value = value; }
 }
