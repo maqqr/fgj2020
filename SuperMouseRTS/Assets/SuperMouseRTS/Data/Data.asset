@@ -32,6 +32,9 @@ MonoBehaviour:
       type: 3}
   UnitPrefab: {fileID: 7023420603831052497, guid: 53780df7b58b7f742a9651272fa1551b,
     type: 3}
+  UnitMaterials:
+  - {fileID: 2100000, guid: 95ae1593f761ce54e92bf5d9f99985f0, type: 2}
+  - {fileID: 2100000, guid: 63f7a599ac3d08641bf519fa841d623a, type: 2}
   PercentileOfTilesResources: 10
   PercentileOfTilesRuins: 10
   PercentileOfTilesObstacles: 5

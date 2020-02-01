@@ -116,11 +116,12 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         protected override void OnUpdate()
         {
+            // TODO: detect when tile changes
             if (!dictionaryBuilt)
             {
                 dictionaryBuilt = true;
 
-                Entities.ForEach((ref Tile tile, ref TilePosition position) =>
+                Entities.ForEach((Entity entity, ref Tile tile, ref TilePosition position) =>
                 {
                     if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
                     {
@@ -131,7 +132,21 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                         {
                             var matrix = tileMatrix * mesh.Transform;
 
-                            var key = new MeshMaterialPair(mesh.Mesh, mesh.Material);
+                            var material = mesh.Material;
+
+                            // Override material in building tiles to give them different colors
+                            // TODO: This overrides the ground material also, which is wrong!
+                            if (tile.tile == TileContent.Building && EntityManager.HasComponent<PlayerID>(entity))
+                            {
+                                var materialIndex = EntityManager.GetComponentData<PlayerID>(entity).Value - 1;
+                                if (materialIndex >= 0 && materialIndex < GameManager.Instance.LoadedSettings.BuildingMaterials.Length)
+                                {
+                                    material = GameManager.Instance.LoadedSettings.BuildingMaterials[materialIndex];
+                                }
+                                else Debug.LogWarning($"Invalid materialIndex {materialIndex} when drawing building with custom material");
+                            }
+
+                            var key = new MeshMaterialPair(mesh.Mesh, material);
 
                             if (drawList.ContainsKey(key))
                             {
