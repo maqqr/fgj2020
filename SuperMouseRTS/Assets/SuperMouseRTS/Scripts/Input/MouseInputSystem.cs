@@ -112,30 +112,70 @@ public class MouseInputSystem : ComponentSystem
 
     private void BuildingClicked(PlayerID playerId, Entity selectedBuilding)
     {
-        // TODO: check if building or ruin
-
         var pointerIndex = playerId.Value - 1;
 
         var tile = EntityManager.GetComponentData<Tile>(selectedBuilding);
         var tilePosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding);
-        var buildingOwnership = EntityManager.GetComponentData<PlayerID>(selectedBuilding);
-        bool isOwned = playerId.Value == buildingOwnership.Value;
 
-        if (isOwned)
-        {
-            previouslySelectedEntity[pointerIndex] = selectedBuilding;
-        }
-        else
+        if (tile.tile == TileContent.Ruins)
         {
             if (previouslySelectedEntity.ContainsKey(pointerIndex))
             {
-                // TODO: Attack from previouslySelectedEntity[pointerIndex] to selectedBuilding
+                // TODO: command units spawned from previouslySelectedEntity[pointerIndex]
+                // to repair 'selectedBuilding' entity
 
-                previouslySelectedEntity.Remove(pointerIndex);
+                var selectedPosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding).Value;
+                var prevSelectedPosition = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
+
+                // Go through entities that were spawned from previouslySelectedEntity[pointerIndex]
+                Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
+                {
+                    if (owner.owner.Value.x == prevSelectedPosition.x && owner.owner.Value.y == prevSelectedPosition.y)
+                    {
+                        unitTarget.Value = new TilePosition() { Value = selectedPosition };
+                        unitTarget.Priority = Priorities.PlayerOrdered;
+                        unitTarget.Operation = AIOperation.Repair;
+
+                        UnityEngine.Debug.Log("Unit ordered to repair " + selectedBuilding);
+                    }
+                });
+            }
+        }
+        else if (tile.tile == TileContent.Building)
+        {
+            var buildingOwnership = EntityManager.GetComponentData<PlayerID>(selectedBuilding);
+            bool isOwned = playerId.Value == buildingOwnership.Value;
+
+            if (isOwned)
+            {
+                previouslySelectedEntity[pointerIndex] = selectedBuilding;
             }
             else
             {
-                // Clicking enemy building first does nothing
+                if (previouslySelectedEntity.ContainsKey(pointerIndex))
+                {
+                    var selectedPosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding).Value;
+                    var prevSelectedPosition = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
+
+                    // Go through entities that were spawned from previouslySelectedEntity[pointerIndex]
+                    Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
+                    {
+                        if (owner.owner.Value.x == prevSelectedPosition.x && owner.owner.Value.y == prevSelectedPosition.y)
+                        {
+                            unitTarget.Value = new TilePosition() { Value = selectedPosition };
+                            unitTarget.Priority = Priorities.PlayerOrdered;
+                            unitTarget.Operation = AIOperation.Attack;
+
+                            UnityEngine.Debug.Log("Unit ordered to attack " + selectedBuilding);
+                        }
+                    });
+
+                    previouslySelectedEntity.Remove(pointerIndex);
+                }
+                else
+                {
+                    // Clicking enemy building first does nothing
+                }
             }
         }
     }

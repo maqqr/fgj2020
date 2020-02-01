@@ -155,6 +155,9 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                         MinBound = tileCenter - float3(size, size, size),
                         MaxBound = tileCenter + float3(size, size, size),
                     });
+
+                    var initialHealth = TileContent == TileContent.Ruins ? 0 : 100;
+                    DOTSTools.SetOrAdd(EntityManager, ent, new Health(initialHealth, 100));
                 }
 
                 if (TileContent == TileContent.Building)
@@ -162,7 +165,6 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                     DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
                     DOTSTools.SetOrAdd(EntityManager, ent, new SpawnScheduler(0, -1));
-                    DOTSTools.SetOrAdd(EntityManager, ent, new Health(100, 100));
                 }
 
                 if (TileContent == TileContent.Resources)
