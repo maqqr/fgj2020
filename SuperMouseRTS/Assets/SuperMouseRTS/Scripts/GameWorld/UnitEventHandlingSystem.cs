@@ -17,39 +17,6 @@ public class UnitEventHandlingSystem : JobComponentSystem
         entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
-    [BurstCompile]
-    struct UnitEventHandlingSystemJob : IJobForEachWithEntity<UnitEvent, OreResources, TilePosition>
-    {
-        [NativeDisableParallelForRestriction]
-        public NativeArray<int> tiles;
-        public int tilesVertically;
-
-        public EntityCommandBuffer.Concurrent entityCommandBuffer;
-
-        public void Execute(Entity ent, int index, [ReadOnly] ref UnitEvent ev, [ReadOnly] ref OreResources resource, [ReadOnly] ref TilePosition pos)
-        {
-            int tilesIndex = WorldCoordinateTools.PositionIntoIndex(pos.Value.x, pos.Value.y, tilesVertically);
-            int resOnTile = tiles[tilesIndex];
-            resOnTile += resource.Value;
-            tiles[tilesIndex] = resOnTile;
-
-            entityCommandBuffer.DestroyEntity(tilesIndex, ent);
-        }
-    }
-
-    struct HandleEventResultsOnTotals : IJobForEachWithEntity<TilePosition, OreResources>
-    {
-        [DeallocateOnJobCompletion]
-        [ReadOnly]
-        public NativeArray<int> tiles;
-        public int tilesVertically;
-
-        public void Execute(Entity entity, int index, ref TilePosition tile, ref OreResources resources)
-        {
-            resources.Value += tiles[WorldCoordinateTools.PositionIntoIndex(tile.Value.x, tile.Value.y, tilesVertically)];
-        }
-    }
-
 
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
@@ -58,26 +25,33 @@ public class UnitEventHandlingSystem : JobComponentSystem
         {
             return inputDependencies;
         }
+        
+        inputDependencies = HandleUnitEventForType<OreResources>(sys, inputDependencies);
+        inputDependencies = HandleUnitEventForType<Health>(sys, inputDependencies);
+
+        return inputDependencies;
+    }
+
+    private JobHandle HandleUnitEventForType<T>(WorldStatusSystem sys, JobHandle inputDependencies) where T : struct, IValue, IComponentData
+    {
         var resourceChanges = new NativeArray<int>(sys.TileCache.Length, Allocator.TempJob);
 
-
-        var unitTotalCountingSystem = new UnitEventHandlingSystemJob()
+        var unitTotalCountingSystem = new UnitEventHandlingSystemJob<T>()
         {
             entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent(),
             tiles = resourceChanges,
             tilesVertically = GameManager.Instance.LoadedSettings.TilesVertically
         };
-        
-        var eventResultHandling = new HandleEventResultsOnTotals()
+
+        var eventResultHandling = new HandleEventResultsOnTotals<T>()
         {
             tilesVertically = GameManager.Instance.LoadedSettings.TilesVertically,
             tiles = resourceChanges
         };
-        inputDependencies = unitTotalCountingSystem.Schedule(this, inputDependencies);        
+        inputDependencies = unitTotalCountingSystem.Schedule(this, inputDependencies);
         inputDependencies = eventResultHandling.Schedule(this, inputDependencies);
 
         entityCommandBuffer.AddJobHandleForProducer(inputDependencies);
-
         return inputDependencies;
     }
 }

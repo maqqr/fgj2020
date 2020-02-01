@@ -132,7 +132,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         protected override void OnUpdate()
         {
-            if (!worldStatus.TileCache.IsCreated)
+            if (!worldStatus.IsTileCacheReady)
             {
                 return;
             }
