@@ -19,11 +19,14 @@ public class Settings : ScriptableObject
     public float PercentileOfTilesRuins = 10;
     public float PercentileOfTilesObstacles = 5;
 
-    public float TileSize = 1.5f;
 
     public int Players = 2;
     public int StartingResources = 100;
 
     public int UnitCost = 50;
     public float UnitSpawnTime = 2f;
+
+    public Health UnitHealth = new Health(50, 50);
+    public int UnitAttackStrength = 5;
+    public int ResourceDeposits = 1000;
 }

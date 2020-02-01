@@ -15,7 +15,7 @@ public class SpawnSystem : JobComponentSystem
 
     protected override void OnCreate()
     {
-        archetype = EntityManager.CreateArchetype(typeof(Translation), typeof(Rotation), typeof(PlayerID), typeof(MovementSpeed));
+        archetype = EntityManager.CreateArchetype(typeof(Translation), typeof(Rotation), typeof(PlayerID), typeof(MovementSpeed), typeof(Health), typeof(AttackStrength), typeof(OwnerBuilding));
 
         base.OnCreate();
         entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
@@ -32,8 +32,13 @@ public class SpawnSystem : JobComponentSystem
     [BurstCompile]
     struct SpawnSystemJob : IJobForEachWithEntity<PlayerID, TilePosition, SpawnTimer>
     {
+        [ReadOnly]
         public float deltaTime;
+        [ReadOnly]
         public float tileSize;
+        [ReadOnly]
+        public Health health;
+        [ReadOnly]
         public EntityArchetype arch;
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
 
@@ -51,8 +56,10 @@ public class SpawnSystem : JobComponentSystem
                 Entity e = entityCommandBuffer.CreateEntity(index, arch);
                 entityCommandBuffer.SetComponent(index, e, new PlayerID(id.Value));
                 Translation trans = new Translation();
-                trans.Value = WorldConversionTools.WorldToUnityCoordinate(tile.Value, tileSize);
+                trans.Value = WorldCoordinateTools.WorldToUnityCoordinate(tile.Value, tileSize);
                 entityCommandBuffer.SetComponent(index, e, trans);
+                entityCommandBuffer.SetComponent(index, e, new Health(health.Value, health.Maximum));
+                entityCommandBuffer.SetComponent(index, e, new OwnerBuilding(tile));
                 
                 timer.TimeLeftToSpawn = -1;
             }
@@ -67,7 +74,8 @@ public class SpawnSystem : JobComponentSystem
         job.deltaTime = Time.DeltaTime; //Prkl, miten sen saa ECS:ssä ulos?
         job.entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent();
         job.arch = archetype;
-        job.tileSize = GameManager.Instance.LoadedSettings.TileSize;
+        job.health = GameManager.Instance.LoadedSettings.UnitHealth;
+        job.tileSize = GameManager.TILE_SIZE;
 
         inputDependencies = job.Schedule(this, inputDependencies);
         entityCommandBuffer.AddJobHandleForProducer(inputDependencies);

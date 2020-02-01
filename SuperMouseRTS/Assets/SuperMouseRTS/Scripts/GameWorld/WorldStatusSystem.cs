@@ -20,6 +20,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private NativeArray<Tile> tileCache;
         private JobHandle latestJobHandle;
 
+        private EntityArchetype buildingArchetype;
+
         public NativeArray<Tile> TileCache
         {
             get
@@ -69,6 +71,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 this.settings = GameManager.Instance.LoadedSettings;
                 InitializeSystem();
             }
+
+            buildingArchetype = EntityManager.CreateArchetype(typeof(Health),typeof(Tile), typeof(TilePosition), typeof(PlayerID));
         }
 
 
@@ -112,17 +116,17 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private void AssignPlayerBuilding(List<int2> ruinsLocations)
         {
             float distanceCombined = 0;
-            Vector3 center = WorldConversionTools.WorldCenter(settings.TilesHorizontally, settings.TilesVertically, settings.TileSize);
+            Vector3 center = WorldCoordinateTools.WorldCenter(settings.TilesHorizontally, settings.TilesVertically, GameManager.TILE_SIZE);
 
             ruinsLocations.ForEach(ruin =>
             {
-                distanceCombined += Vector3.Distance(center, WorldConversionTools.WorldToUnityCoordinate(ruin.x, ruin.y, settings.TileSize));
+                distanceCombined += Vector3.Distance(center, WorldCoordinateTools.WorldToUnityCoordinate(ruin.x, ruin.y, GameManager.TILE_SIZE));
             });
 
 
             distanceCombined /= ruinsLocations.Count;
 
-            List<int2> overAverage = ruinsLocations.FindAll((x) => Vector3.Distance(center, WorldConversionTools.WorldToUnityCoordinate(x, settings.TileSize)) > distanceCombined);
+            List<int2> overAverage = ruinsLocations.FindAll((x) => Vector3.Distance(center, WorldCoordinateTools.WorldToUnityCoordinate(x, GameManager.TILE_SIZE)) > distanceCombined);
 
             int2 playerLocation = overAverage[UnityEngine.Random.Range(0, overAverage.Count)];
 
@@ -136,7 +140,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             Map((TileContent, x, y) =>
             {
-                Entity ent = EntityManager.CreateEntity(typeof(Tile), typeof(TilePosition));
+                Entity ent = EntityManager.CreateEntity(buildingArchetype);
                 EntityManager.SetComponentData(ent, new Tile(this[x, y]));
                 EntityManager.SetComponentData(ent, new TilePosition(new int2(x, y)));
 
@@ -145,6 +149,12 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                     DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
                     DOTSTools.SetOrAdd(EntityManager, ent, new SpawnTimer(-1));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new Health(100, 100));
+                }
+                if(TileContent == TileContent.Resources)
+                {
+                    DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.ResourceDeposits));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new OreHaulingSpeed(30));
                 }
             });
         }

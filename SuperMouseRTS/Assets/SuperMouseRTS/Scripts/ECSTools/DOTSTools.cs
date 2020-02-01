@@ -16,6 +16,4 @@ public class DOTSTools
             entityManager.AddComponentData<T>(ent, t);
         }
     }
-
-   
 }

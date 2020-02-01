@@ -38,7 +38,7 @@ public class PlayerStatusSystem : ComponentSystem
             int id = i + 1;
             Entity ent = EntityManager.CreateEntity();
             EntityManager.AddComponentData<PlayerID>(ent, new PlayerID(id));
-            EntityManager.AddComponentData<PlayerSpawning>(ent, new PlayerSpawning(false));
+            EntityManager.AddComponentData<Player>(ent, new Player());
 
             infoController.AddPlayerInfo(id);
         }

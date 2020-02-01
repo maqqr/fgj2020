@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.AddressableAssets;
 using System;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Threading.Tasks;
 
 public class GameManager
 {
@@ -15,6 +16,8 @@ public class GameManager
         }
     }
     private const string settingsDataAddress = "Settings";
+
+    public const float TILE_SIZE = 1.5f;
 
     private Settings loadedSettings;
     public Settings LoadedSettings
@@ -46,6 +49,7 @@ public class GameManager
         var operation = Addressables.LoadAssetAsync<Settings>(settingsDataAddress);
         operation.Completed += SettingsLoaded;
     }
+
 
 
 
