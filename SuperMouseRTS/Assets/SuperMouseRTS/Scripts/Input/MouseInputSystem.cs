@@ -27,7 +27,7 @@ public class MouseInputSystem : ComponentSystem
             var pointer = MultiMouse.Instance.GetMouseByIndex(pointerIndex);
             if (pointer == null)
             {
-                UnityEngine.Debug.LogWarning($"Mouse pointer {pointerIndex} is null");
+                //UnityEngine.Debug.LogWarning($"Mouse pointer {pointerIndex} is null");
                 return;
             }
 
@@ -36,7 +36,7 @@ public class MouseInputSystem : ComponentSystem
 
             if (leftClicked)
             {
-                UnityEngine.Debug.Log($"Mouse{pointerIndex} left click");
+                //UnityEngine.Debug.Log($"Mouse{pointerIndex} left click");
 
                 var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
                 var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
@@ -49,13 +49,25 @@ public class MouseInputSystem : ComponentSystem
                 }
                 else if (previouslySelectedEntity.ContainsKey(pointerIndex))
                 {
+                    // Cancel orders
+                    var prevPos = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
+                    Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
+                    {
+                        if (owner.owner.Value.x == prevPos.x && owner.owner.Value.y == prevPos.y)
+                        {
+                            unitTarget.Priority = Priorities.NotSet;
+                            unitTarget.Operation = AIOperation.Unassigned;
+                        }
+                        UnityEngine.Debug.Log("Canceled order for unit");
+                    });
+
                     previouslySelectedEntity.Remove(pointerIndex);
                 }
             }
 
             if (rightClicked)
             {
-                UnityEngine.Debug.Log($"Mouse{pointerIndex} right click");
+                //UnityEngine.Debug.Log($"Mouse{pointerIndex} right click");
 
                 var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
                 var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
@@ -121,9 +133,6 @@ public class MouseInputSystem : ComponentSystem
         {
             if (previouslySelectedEntity.ContainsKey(pointerIndex))
             {
-                // TODO: command units spawned from previouslySelectedEntity[pointerIndex]
-                // to repair 'selectedBuilding' entity
-
                 var selectedPosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding).Value;
                 var prevSelectedPosition = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
 
