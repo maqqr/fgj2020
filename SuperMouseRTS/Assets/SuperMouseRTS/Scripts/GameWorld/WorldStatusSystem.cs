@@ -361,6 +361,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                     entityCommandBuffer.RemoveComponent<PlayerID>(index, ent);
                     entityCommandBuffer.RemoveComponent<OreResources>(index, ent);
                     entityCommandBuffer.RemoveComponent<SpawnScheduler>(index, ent);
+                    entityCommandBuffer.SetComponent<Health>(index, ent, new Health(0, health.Maximum));
                     tile.tile = TileContent.Ruins;
 
                     for (int i = 0; i < PeasantOwners.Length; i++)
