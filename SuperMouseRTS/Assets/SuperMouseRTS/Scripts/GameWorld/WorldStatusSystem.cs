@@ -33,6 +33,15 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 return tileCache;
             }
         }
+
+        public bool IsTileCacheReady
+        {
+            get
+            {
+                return tileCache.IsCreated;
+            }
+        }
+
         public JobHandle LatestJobHandle
         {
             get
