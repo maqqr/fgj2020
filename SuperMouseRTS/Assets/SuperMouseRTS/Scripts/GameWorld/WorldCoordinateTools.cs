@@ -11,6 +11,11 @@ public class WorldCoordinateTools
     }
 
 
+    public static int PositionIntoIndex(int x, int y, int tilesVertically)
+    {
+        return x + y * tilesVertically;
+    }
+
     public static float3 WorldToUnityCoordinate(int x, int y, float tileSize = 1.5f)
     {
         return new float3(x * tileSize, 0, y * tileSize);

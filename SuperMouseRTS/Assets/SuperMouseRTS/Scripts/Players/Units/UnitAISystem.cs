@@ -102,6 +102,7 @@ public class UnitAISystem : JobComponentSystem
             {
                 Entity newOreEvent = entityCommandBuffer.CreateEntity(index, oreEventArchetype);
                 entityCommandBuffer.SetComponent(index, newOreEvent, new OreResources(oreChange));
+                entityCommandBuffer.SetComponent(index, newOreEvent, new TilePosition(targetPosition));
                 return true;
             }
             return false;

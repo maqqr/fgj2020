@@ -21,6 +21,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private JobHandle latestJobHandle;
 
         private EntityArchetype buildingArchetype;
+        private EndSimulationEntityCommandBufferSystem entityCommandBuffer;
 
         public NativeArray<Tile> TileCache
         {
@@ -33,6 +34,15 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 return tileCache;
             }
         }
+
+        public bool IsTileCacheReady
+        {
+            get
+            {
+                return tileCache.IsCreated;
+            }
+        }
+
         public JobHandle LatestJobHandle
         {
             get
@@ -71,7 +81,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 this.settings = GameManager.Instance.LoadedSettings;
                 InitializeSystem();
             }
-
+            entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
             buildingArchetype = EntityManager.CreateArchetype(typeof(Health), typeof(Tile), typeof(TilePosition), typeof(PlayerID));
         }
 
@@ -243,7 +253,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
 
         [BurstCompile]
-        struct WorldGenerationJob : IJobForEachWithEntity<Tile, TilePosition>
+        struct GenerateTileCache : IJobForEachWithEntity<Tile, TilePosition>
         {
             [WriteOnly]
             [NativeDisableParallelForRestriction]
@@ -254,6 +264,21 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             public void Execute(Entity ent, int index, [ReadOnly] ref Tile tile, [ReadOnly] ref TilePosition pos)
             {
                 insertHere[pos.Value.x + tilesHorizontally * pos.Value.y] = tile;
+            }
+        }
+
+        [BurstCompile]
+        struct RemoveEmptyResourceJob : IJobForEachWithEntity<Tile, TilePosition, OreHaulable, OreResources>
+        {
+            public EntityCommandBuffer.Concurrent entityCommandBuffer;
+            public void Execute(Entity ent, int index, ref Tile tile, [ReadOnly] ref TilePosition pos, [ReadOnly] ref OreHaulable tag, ref OreResources res)
+            {
+                if(res.Value <= 0)
+                {
+                    tile.tile = TileContent.Empty;
+                    entityCommandBuffer.RemoveComponent<OreHaulable>(index, ent);
+                    entityCommandBuffer.RemoveComponent<OreResources>(index, ent);
+                }
             }
         }
 
@@ -280,15 +305,23 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 latestJobHandle.Complete();
             }
 
+            var removeResourcesJob = new RemoveEmptyResourceJob
+            {
+                entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            };
+
+            inputDependencies = removeResourcesJob.Schedule(this, inputDependencies);
+
             tileCache = new NativeArray<Tile>(settings.TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
 
-            var job = new WorldGenerationJob();
+            var job = new GenerateTileCache();
 
             job.insertHere = tileCache;
             job.tilesHorizontally = settings.TilesHorizontally;
 
             // Now that the job is set up, schedule it to be run. 
             latestJobHandle = job.Schedule(this, inputDependencies);
+            entityCommandBuffer.AddJobHandleForProducer(latestJobHandle);
 
             return latestJobHandle;
         }
