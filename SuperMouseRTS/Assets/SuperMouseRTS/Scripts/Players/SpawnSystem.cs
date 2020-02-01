@@ -16,7 +16,8 @@ public class SpawnSystem : JobComponentSystem
     protected override void OnCreate()
     {
         archetype = EntityManager.CreateArchetype(typeof(Translation), typeof(Rotation), typeof(PlayerID), typeof(MovementSpeed), typeof(OperationCapability),
-                                                  typeof(Health), typeof(AttackStrength), typeof(OreCapacity), typeof(UnitTarget), typeof(OwnerBuilding));
+                                                  typeof(Health), typeof(AttackStrength), typeof(OreCapacity), typeof(UnitTarget), typeof(OwnerBuilding),
+                                                  typeof(NearestUnit));
 
         base.OnCreate();
         entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
@@ -72,7 +73,7 @@ public class SpawnSystem : JobComponentSystem
                 entityCommandBuffer.SetComponent(index, e, new OreCapacity(0, capacity));
                 entityCommandBuffer.SetComponent(index, e, new UnitTarget(tile, Priorities.NotSet, AIOperation.Unassigned));
                 entityCommandBuffer.SetComponent(index, e, new Rotation() { Value = new quaternion(0, 0f, 0f, 1f) });
-
+                entityCommandBuffer.SetComponent(index, e, new NearestUnit() { DistToAlly = float.MaxValue, DistToEnemy = float.MaxValue });
 
                 timer.SpawnsOrdered--;
                 timer.TimeLeftToSpawn = UnitSpawnTime;
