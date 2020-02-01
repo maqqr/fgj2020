@@ -6,6 +6,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using static Unity.Mathematics.math;
 
+
 public class MovementSystem : JobComponentSystem
 {
     [BurstCompile]
