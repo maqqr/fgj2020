@@ -72,7 +72,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 InitializeSystem();
             }
 
-            buildingArchetype = EntityManager.CreateArchetype(typeof(Health),typeof(Tile), typeof(TilePosition), typeof(PlayerID));
+            buildingArchetype = EntityManager.CreateArchetype(typeof(Health), typeof(Tile), typeof(TilePosition), typeof(PlayerID));
         }
 
 
@@ -106,7 +106,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 }
             });
 
-            
+
             for (int i = 0; i < settings.Players; i++)
             {
                 AssignPlayerBuilding(ruinsLocations);
@@ -140,18 +140,32 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             Map((TileContent, x, y) =>
             {
+                var tilePosition = new TilePosition(new int2(x, y));
+
                 Entity ent = EntityManager.CreateEntity(buildingArchetype);
                 EntityManager.SetComponentData(ent, new Tile(this[x, y]));
-                EntityManager.SetComponentData(ent, new TilePosition(new int2(x, y)));
+                EntityManager.SetComponentData(ent, tilePosition);
 
-                if(TileContent == TileContent.Building)
+                if (TileContent == TileContent.Building || TileContent == TileContent.Ruins)
+                {
+                    var size = GameManager.TILE_SIZE / 2.0f;
+                    var tileCenter = WorldCoordinateTools.WorldToUnityCoordinate(tilePosition.Value, GameManager.TILE_SIZE);
+                    DOTSTools.SetOrAdd(EntityManager, ent, new RaycastAABB()
+                    {
+                        MinBound = tileCenter - float3(size, size, size),
+                        MaxBound = tileCenter + float3(size, size, size),
+                    });
+                }
+
+                if (TileContent == TileContent.Building)
                 {
                     DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
                     DOTSTools.SetOrAdd(EntityManager, ent, new SpawnTimer(-1));
                     DOTSTools.SetOrAdd(EntityManager, ent, new Health(100, 100));
                 }
-                if(TileContent == TileContent.Resources)
+
+                if (TileContent == TileContent.Resources)
                 {
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.ResourceDeposits));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreHaulingSpeed(30));
@@ -204,7 +218,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         private void TryGenerateTileOfType(Unity.Mathematics.Random rand, float tiles, TileContent tileContent, int tilesHorizontally, int tilesVertically, List<int2> positions = null, int maxTries = 100)
         {
-            
+
             for (int i = 0; i < tiles; i++)
             {
                 int2 pos;
@@ -217,7 +231,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 while (this[pos.x, pos.y] != TileContent.Empty && tries < maxTries);
 
                 this[pos.x, pos.y] = tileContent;
-                if(positions != null)
+                if (positions != null)
                 {
                     positions.Add(pos);
                 }

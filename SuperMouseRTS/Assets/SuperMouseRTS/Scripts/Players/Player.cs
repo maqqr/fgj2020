@@ -6,5 +6,6 @@ using Unity.Mathematics;
 [Serializable]
 public struct Player : IComponentData
 {
-
+    public bool LeftDownOnLastFrame;
+    public bool RightDownOnLastFrame;
 }

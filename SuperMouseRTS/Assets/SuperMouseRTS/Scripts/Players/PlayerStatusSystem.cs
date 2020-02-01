@@ -68,16 +68,16 @@ public class PlayerStatusSystem : ComponentSystem
         {
             infoController.SetPlayerInfo(i +1, counts[i].ToString());
         }
-        Entities.ForEach((ref PlayerID id, ref OreResources resources, ref SpawnTimer timer) =>
-        {
-            if(timer.TimeLeftToSpawn < 0 && resources.Value >= GameManager.Instance.LoadedSettings.UnitCost)
-            {
-                resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
+        //Entities.ForEach((ref PlayerID id, ref OreResources resources, ref SpawnTimer timer) =>
+        //{
+        //    if(timer.TimeLeftToSpawn < 0 && resources.Value >= GameManager.Instance.LoadedSettings.UnitCost)
+        //    {
+        //        resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
 
-                timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
+        //        timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
 
-            }
-        });
+        //    }
+        //});
 
     }
 
