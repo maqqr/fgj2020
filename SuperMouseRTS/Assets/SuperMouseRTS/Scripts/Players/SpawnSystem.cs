@@ -47,14 +47,17 @@ public class SpawnSystem : JobComponentSystem
         public float rangeOfOperation;
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
 
+        public float UnitSpawnTime;
+
         public void Execute(Entity ent, int index, [ReadOnly] ref PlayerID id, [ReadOnly] ref TilePosition tile, ref SpawnScheduler timer)
         {
+            timer.TimeLeftToSpawn = math.max(0, timer.TimeLeftToSpawn - deltaTime);
+
             if (timer.SpawnsOrdered <= 0)
             {
                 return;
             }
 
-            timer.TimeLeftToSpawn -= deltaTime;
             if (timer.TimeLeftToSpawn <= 0)
             {
                 //Really not sure if this id is the right one at all
@@ -72,7 +75,7 @@ public class SpawnSystem : JobComponentSystem
 
 
                 timer.SpawnsOrdered--;
-                timer.TimeLeftToSpawn = -1;
+                timer.TimeLeftToSpawn = UnitSpawnTime;
             }
         }
     }
@@ -88,6 +91,7 @@ public class SpawnSystem : JobComponentSystem
         job.health = GameManager.Instance.LoadedSettings.UnitHealth;
         job.tileSize = GameManager.TILE_SIZE;
         job.rangeOfOperation = GameManager.Instance.LoadedSettings.UnitRangeOfOperation;
+        job.UnitSpawnTime = GameManager.Instance.LoadedSettings.UnitSpawnTime;
 
         inputDependencies = job.Schedule(this, inputDependencies);
         entityCommandBuffer.AddJobHandleForProducer(inputDependencies);
