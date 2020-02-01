@@ -124,8 +124,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
                     {
-                        var tileOrigin = new Vector3(position.Value.x, 0f, position.Value.y);
-                        var tileMatrix = Matrix4x4.Translate(tileOrigin);
+                        var tileOrigin = WorldCoordinateTools.WorldToUnityCoordinate(position.Value);
+                        var tileMatrix = Matrix4x4.Translate(tileOrigin) * Matrix4x4.Scale(new Vector3(GameManager.TILE_SIZE, GameManager.TILE_SIZE, GameManager.TILE_SIZE));
 
                         foreach (var mesh in meshes)
                         {

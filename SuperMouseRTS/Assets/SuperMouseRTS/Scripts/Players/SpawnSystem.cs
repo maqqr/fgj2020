@@ -44,13 +44,13 @@ public class SpawnSystem : JobComponentSystem
 
         public void Execute(Entity ent, int index, [ReadOnly] ref PlayerID id, [ReadOnly] ref TilePosition tile, ref SpawnTimer timer)
         {
-            if(timer.TimeLeftToSpawn < 0)
+            if (timer.TimeLeftToSpawn < 0)
             {
                 return;
             }
 
             timer.TimeLeftToSpawn -= deltaTime;
-            if(timer.TimeLeftToSpawn <= 0)
+            if (timer.TimeLeftToSpawn <= 0)
             {
                 //Really not sure if this id is the right one at all
                 Entity e = entityCommandBuffer.CreateEntity(index, arch);
@@ -60,15 +60,14 @@ public class SpawnSystem : JobComponentSystem
                 entityCommandBuffer.SetComponent(index, e, trans);
                 entityCommandBuffer.SetComponent(index, e, new Health(health.Value, health.Maximum));
                 entityCommandBuffer.SetComponent(index, e, new OwnerBuilding(tile));
-                
+
                 timer.TimeLeftToSpawn = -1;
             }
         }
     }
-    
+
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
-
         var job = new SpawnSystemJob();
 
         job.deltaTime = Time.DeltaTime; //Prkl, miten sen saa ECS:ssä ulos?

@@ -15,6 +15,8 @@ public class Settings : ScriptableObject
 
     public TilePrefabPair[] TilePrefabs;
 
+    public GameObject UnitPrefab;
+
     public float PercentileOfTilesResources = 10;
     public float PercentileOfTilesRuins = 10;
     public float PercentileOfTilesObstacles = 5;
