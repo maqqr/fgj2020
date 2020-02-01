@@ -19,7 +19,7 @@ public class GameManager
 
     public const float TILE_SIZE = 1.5f;
     public const int HAULING_SPEED = 5;
-    public const float COOLDOWN_LENGTH = 0.8f;
+    public const float COOLDOWN_LENGTH = 1.5f;
     public const float MOVEMENT_SPEED = 2.1f;
 
     private Settings loadedSettings;
