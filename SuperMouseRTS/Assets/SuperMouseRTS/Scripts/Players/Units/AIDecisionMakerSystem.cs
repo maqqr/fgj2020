@@ -49,6 +49,9 @@ public class AIDecisionMakerSystem : JobComponentSystem
             }
         }
     }
+
+
+
     
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {

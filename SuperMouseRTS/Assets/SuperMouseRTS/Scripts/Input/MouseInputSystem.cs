@@ -99,7 +99,7 @@ public class MouseInputSystem : ComponentSystem
             {
                 resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
                 timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
-                timer.SpawnsOrdered += 1000;
+                timer.SpawnsOrdered += 1;
 
                 EntityManager.SetComponentData(selectedBuilding, resources);
                 EntityManager.SetComponentData(selectedBuilding, timer);

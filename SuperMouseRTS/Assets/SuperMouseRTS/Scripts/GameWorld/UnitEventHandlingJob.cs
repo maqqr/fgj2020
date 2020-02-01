@@ -7,7 +7,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 
 [BurstCompile]
-struct UnitEventHandlingSystemJob<T> : IJobForEachWithEntity<UnitEvent, T, TilePosition, Tile> where T : struct, IValue, IComponentData
+struct UnitEventHandlingSystemJob<T> : IJobForEachWithEntity<UnitEvent, T, TilePosition> where T : struct, IValue, IComponentData
 {
     [NativeDisableParallelForRestriction]
     public NativeArray<int> tiles;
@@ -15,7 +15,7 @@ struct UnitEventHandlingSystemJob<T> : IJobForEachWithEntity<UnitEvent, T, TileP
 
     public EntityCommandBuffer.Concurrent entityCommandBuffer;
 
-    public void Execute(Entity ent, int index, [ReadOnly] ref UnitEvent ev, [ReadOnly] ref T resource, [ReadOnly] ref TilePosition pos, [ReadOnly] ref Tile tile)
+    public void Execute(Entity ent, int index, [ReadOnly] ref UnitEvent ev, [ReadOnly] ref T resource, [ReadOnly] ref TilePosition pos)
     {
         int tilesIndex = WorldCoordinateTools.PositionIntoIndex(pos.Value.x, pos.Value.y, tilesVertically);
         int resOnTile = tiles[tilesIndex];

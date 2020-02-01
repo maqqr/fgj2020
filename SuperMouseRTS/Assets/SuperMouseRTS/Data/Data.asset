@@ -40,14 +40,14 @@ MonoBehaviour:
   PercentileOfTilesRuins: 10
   PercentileOfTilesObstacles: 5
   Players: 2
-  StartingResources: 1000
+  StartingResources: 100
   UnitCost: 50
-  UnitSpawnTime: 0.01
+  UnitSpawnTime: 1.2
   UnitHealth:
     Value: 50
     Maximum: 50
   UnitAttackStrength: 5
-  ResourceDeposits: 1000
+  ResourceDeposits: 1200
   UnitCapacity: 25
   OreHaulSpeedFromDeposit: 3
-  UnitRangeOfOperation: 0.3
+  UnitRangeOfOperation: 0.4

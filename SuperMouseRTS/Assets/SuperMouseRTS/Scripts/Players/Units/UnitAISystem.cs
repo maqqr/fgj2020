@@ -41,7 +41,10 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Unassigned:
                     break;
                 case AIOperation.Attack:
+                    if (canAct)
+                    {
                         usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, -2);
+                    }
                     break;
                 case AIOperation.Collect:
                     if (capacity.Value >= capacity.Maximum)
