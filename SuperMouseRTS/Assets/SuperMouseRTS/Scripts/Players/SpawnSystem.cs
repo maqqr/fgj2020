@@ -60,6 +60,7 @@ public class SpawnSystem : JobComponentSystem
                 entityCommandBuffer.SetComponent(index, e, trans);
                 entityCommandBuffer.SetComponent(index, e, new Health(health.Value, health.Maximum));
                 entityCommandBuffer.SetComponent(index, e, new OwnerBuilding(tile));
+                entityCommandBuffer.SetComponent(index, e, new Rotation() { Value = new quaternion(0f, 0f, 0f, 1f) });
 
                 timer.TimeLeftToSpawn = -1;
             }
