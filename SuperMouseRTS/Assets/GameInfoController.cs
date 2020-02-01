@@ -1,18 +1,33 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GameInfoController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField]
+    private Transform infoPanel = null;
+
+    private Dictionary<int, TextMeshProUGUI> unitCounts = new Dictionary<int, TextMeshProUGUI>();
+
+    public void AddPlayerInfo(int id)
     {
-        
+        GameObject textObject = new GameObject(String.Format("Player{0} Text", id), typeof(TextMeshProUGUI));
+        unitCounts.Add(id, textObject.GetComponent<TextMeshProUGUI>());
+
+        textObject.transform.SetParent(infoPanel.transform);
     }
 
-    // Update is called once per frame
-    void Update()
+
+    public void SetPlayerInfo(int id, string text)
     {
-        
+        if(unitCounts.TryGetValue(id, out TextMeshProUGUI textLabel))
+        { 
+            if(textLabel.text != text)
+            {
+                textLabel.text = text;
+            } 
+        }
     }
 }

@@ -23,4 +23,7 @@ public class Settings : ScriptableObject
 
     public int Players = 2;
     public int StartingResources = 100;
+
+    public int UnitCost = 50;
+    public float UnitSpawnTime = 2f;
 }

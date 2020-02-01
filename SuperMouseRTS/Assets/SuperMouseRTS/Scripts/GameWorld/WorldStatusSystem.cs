@@ -142,18 +142,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
                 if(TileContent == TileContent.Building)
                 {
-                    PlayerID owner = new PlayerID(playerID++);
-                    if (EntityManager.HasComponent<PlayerID>(ent))
-                    {
-                        EntityManager.SetComponentData<PlayerID>(ent, owner);
-                    }
-                    else
-                    {
-                        EntityManager.AddComponentData<PlayerID>(ent, owner);
-                    }
+                    DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new SpawnTimer(-1));
                 }
             });
         }
+
 
         private void Map(Action<TileContent, int, int> predicate)
         {
