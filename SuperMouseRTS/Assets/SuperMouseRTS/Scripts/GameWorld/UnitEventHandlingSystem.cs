@@ -17,11 +17,11 @@ public class UnitEventHandlingSystem : JobComponentSystem
         entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
-    [BurstCompile]
+    //[BurstCompile]
     struct UnitEventHandlingSystemJob : IJobForEachWithEntity<UnitEvent, OreResources, TilePosition>
     {
-        [WriteOnly]
-        public NativeArray<OreResources> tiles;
+        [NativeDisableParallelForRestriction]
+        public NativeArray<int> tiles;
         public int tilesVertically;
 
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
@@ -29,8 +29,8 @@ public class UnitEventHandlingSystem : JobComponentSystem
         public void Execute(Entity ent, int index, [ReadOnly] ref UnitEvent ev, [ReadOnly] ref OreResources resource, [ReadOnly] ref TilePosition pos)
         {
             int tilesIndex = WorldCoordinateTools.PositionIntoIndex(pos.Value.x, pos.Value.y, tilesVertically);
-            OreResources resOnTile = tiles[tilesIndex];
-            resOnTile.Value += resource.Value;
+            int resOnTile = tiles[tilesIndex];
+            resOnTile += resource.Value;
             tiles[tilesIndex] = resOnTile;
 
             entityCommandBuffer.DestroyEntity(tilesIndex, ent);
@@ -41,12 +41,12 @@ public class UnitEventHandlingSystem : JobComponentSystem
     {
         [DeallocateOnJobCompletion]
         [ReadOnly]
-        public NativeArray<OreResources> tiles;
+        public NativeArray<int> tiles;
         public int tilesVertically;
 
         public void Execute(Entity entity, int index, ref TilePosition tile, ref OreResources resources)
         {
-            resources.Value += tiles[WorldCoordinateTools.PositionIntoIndex(tile.Value.x, tile.Value.y, tilesVertically)].Value;
+            resources.Value += tiles[WorldCoordinateTools.PositionIntoIndex(tile.Value.x, tile.Value.y, tilesVertically)];
         }
     }
 
@@ -58,7 +58,7 @@ public class UnitEventHandlingSystem : JobComponentSystem
         {
             return inputDependencies;
         }
-        var resourceChanges = new NativeArray<OreResources>(sys.TileCache.Length, Allocator.TempJob);
+        var resourceChanges = new NativeArray<int>(sys.TileCache.Length, Allocator.TempJob);
 
 
         var unitTotalCountingSystem = new UnitEventHandlingSystemJob()
