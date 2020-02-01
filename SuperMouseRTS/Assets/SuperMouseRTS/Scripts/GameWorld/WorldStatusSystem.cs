@@ -105,7 +105,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             var queryDesc = new EntityQueryDesc
             {
-                All = new ComponentType[] { ComponentType.ReadOnly<NearestUnit>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<PlayerID>() },
+                All = new ComponentType[] { ComponentType.ReadOnly<OwnerBuilding>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<PlayerID>() },
                 Options = EntityQueryOptions.Default,
             };
             allUnitsQuery = GetEntityQuery(queryDesc);
@@ -292,10 +292,10 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         }
 
 
-        //[BurstCompile]
+        [BurstCompile]
         struct RepairBuilding : IJobForEachWithEntity<Tile, TilePosition, Health>
         {
-            [ReadOnly, DeallocateOnJobCompletion]
+            [ReadOnly]
             public NativeArray<Entity> OtherUnits;
             [ReadOnly, DeallocateOnJobCompletion]
             public NativeArray<Translation> OtherPositions;
@@ -345,6 +345,37 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         }
 
 
+        [BurstCompile]
+        struct RuinateBuildingJob : IJobForEachWithEntity<PlayerID, Health, Tile, TilePosition>
+        {
+            public EntityCommandBuffer.Concurrent entityCommandBuffer;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<Entity> PoorPeasants;
+            [ReadOnly, DeallocateOnJobCompletion]
+            public NativeArray<OwnerBuilding> PeasantOwners;
+
+            public void Execute(Entity ent, int index, ref PlayerID id, [ReadOnly] ref Health health, ref Tile tile, [ReadOnly] ref TilePosition pos)
+            {
+                if(health.Value <= 0)
+                {
+                    entityCommandBuffer.RemoveComponent<PlayerID>(index, ent);
+                    entityCommandBuffer.RemoveComponent<OreResources>(index, ent);
+                    entityCommandBuffer.RemoveComponent<SpawnScheduler>(index, ent);
+                    tile.tile = TileContent.Ruins;
+
+                    for (int i = 0; i < PeasantOwners.Length; i++)
+                    {
+                        if(math.distance(PeasantOwners[i].owner.Value,pos.Value) < 0.01f)
+                        {
+                            entityCommandBuffer.DestroyEntity(index, PoorPeasants[i]);
+                        }
+                    }
+                }
+
+            }
+        }
+
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -383,6 +414,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             var unitEntityArray = allUnitsQuery.ToEntityArray(Allocator.TempJob);
             var positionArray = allUnitsQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
             var playerIdArray = allUnitsQuery.ToComponentDataArray<PlayerID>(Allocator.TempJob);
+            var owners = allUnitsQuery.ToComponentDataArray<OwnerBuilding>(Allocator.TempJob);
 
             var repairBuildingJob = new RepairBuilding
             {
@@ -399,7 +431,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             inputDependencies = repairBuildingJob.Schedule(this, inputDependencies);
 
-            
+            var ruinateBuildingJob = new RuinateBuildingJob
+            {
+                PoorPeasants = unitEntityArray,
+                PeasantOwners = owners,
+                entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            };
+            inputDependencies = ruinateBuildingJob.Schedule(this, inputDependencies);
 
             // Now that the job is set up, schedule it to be run. 
             latestJobHandle = job.Schedule(this, inputDependencies);

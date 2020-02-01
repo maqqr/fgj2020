@@ -41,7 +41,7 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Unassigned:
                     break;
                 case AIOperation.Attack:
-                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, 5);
+                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, -2);
                     break;
                 case AIOperation.Collect:
                     if (capacity.Value >= capacity.Maximum)
@@ -67,7 +67,7 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Repair:
                     if (canAct)
                     {
-                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, 10);
+                        usedOperation = HealthEventCheck(index, trans, target, operationCapability, usedOperation, 1);
                     }
                     break;
                 default:
