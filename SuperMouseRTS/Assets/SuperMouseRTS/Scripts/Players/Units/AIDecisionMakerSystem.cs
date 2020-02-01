@@ -31,9 +31,12 @@ public class AIDecisionMakerSystem : JobComponentSystem
             {
                 if(math.distance(owners[i].Value, owner.owner.Value) < 0.01f)
                 {
-                    movement.Value = targets[i];
-                    movement.Operation = AIOperation.Collect;
-                    movement.Priority = Priorities.NotUrgent;
+                    if (movement.Priority <= Priorities.NotUrgent)
+                    {
+                        movement.Value = targets[i];
+                        movement.Operation = AIOperation.Collect;
+                        movement.Priority = Priorities.NotUrgent;
+                    }
                 }
             }
         }

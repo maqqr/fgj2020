@@ -64,6 +64,20 @@ public class UnitAISystem : JobComponentSystem
                     }
                     break;
                 case AIOperation.Repair:
+                    if (canAct)
+                    {
+                        float dist = math.distance(trans.Value, WorldCoordinateTools.WorldToUnityCoordinate(target.Value.Value));
+                        if (dist < operationCapability.Value)
+                        {
+                            Entity ev = entityCommandBuffer.CreateEntity(index);
+                            entityCommandBuffer.AddComponent<UnitEvent>(index, ev);
+                            entityCommandBuffer.AddComponent<TilePosition>(index, ev);
+                            entityCommandBuffer.AddComponent<Health>(index, ev);
+                            entityCommandBuffer.SetComponent(index, ev, target.Value);
+                            entityCommandBuffer.SetComponent(index, ev, new Health(10, 0));
+                            usedOperation = true;
+                        }
+                    }
                     break;
                 default:
                     throw new System.Exception("Nopety nope");
