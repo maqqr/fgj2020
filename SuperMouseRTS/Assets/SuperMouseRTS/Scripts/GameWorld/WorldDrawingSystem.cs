@@ -7,6 +7,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using static Unity.Mathematics.math;
+using System;
 
 namespace Assets.SuperMouseRTS.Scripts.GameWorld
 {
@@ -35,8 +36,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         Dictionary<TileContent, ProcessedMesh[]> tileMeshes = new Dictionary<TileContent, ProcessedMesh[]>();
 
+        private WorldStatusSystem worldStatus;
+
+
         protected override void OnCreate()
         {
+            worldStatus = World.GetOrCreateSystem<WorldStatusSystem>();
+
             Enabled = GameManager.Instance.IsSettingsLoaded;
             if (Enabled)
             {
@@ -48,6 +54,14 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 Enabled = true;
                 Initialize();
             };
+        }
+
+        protected override void OnDestroy()
+        {
+            if (previousFrameTiles.IsCreated)
+            {
+                previousFrameTiles.Dispose();
+            }
         }
 
         private void Initialize()
@@ -112,84 +126,102 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
         bool dictionaryBuilt = false;
 
-        Dictionary<MeshMaterialPair, Matrix4x4[]> drawList = new Dictionary<MeshMaterialPair, Matrix4x4[]>();
+        Dictionary<MeshMaterialPair, List<Matrix4x4>> drawList = new Dictionary<MeshMaterialPair, List<Matrix4x4>>();
+
+        NativeArray<Tile> previousFrameTiles;
 
         protected override void OnUpdate()
         {
-            // TODO: detect when tile changes
-            if (!dictionaryBuilt)
+            if (!worldStatus.TileCache.IsCreated)
             {
-                dictionaryBuilt = true;
-
-                Entities.ForEach((Entity entity, ref Tile tile, ref TilePosition position) =>
-                {
-                    if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
-                    {
-                        var tileOrigin = WorldCoordinateTools.WorldToUnityCoordinate(position.Value);
-                        var tileMatrix = Matrix4x4.Translate(tileOrigin) * Matrix4x4.Scale(new Vector3(GameManager.TILE_SIZE, GameManager.TILE_SIZE, GameManager.TILE_SIZE));
-
-                        foreach (var mesh in meshes)
-                        {
-                            var matrix = tileMatrix * mesh.Transform;
-
-                            var material = mesh.Material;
-
-                            // Override material in building tiles to give them different colors
-                            // TODO: This overrides the ground material also, which is wrong!
-                            if (tile.tile == TileContent.Building && EntityManager.HasComponent<PlayerID>(entity))
-                            {
-                                var materialIndex = EntityManager.GetComponentData<PlayerID>(entity).Value - 1;
-                                if (materialIndex >= 0 && materialIndex < GameManager.Instance.LoadedSettings.BuildingMaterials.Length)
-                                {
-                                    material = GameManager.Instance.LoadedSettings.BuildingMaterials[materialIndex];
-                                }
-                                else Debug.LogWarning($"Invalid materialIndex {materialIndex} when drawing building with custom material");
-                            }
-
-                            var key = new MeshMaterialPair(mesh.Mesh, material);
-
-                            if (drawList.ContainsKey(key))
-                            {
-                                var arr = drawList[key];
-                                System.Array.Resize(ref arr, arr.Length + 1); // This might destroy the performance
-                                arr[arr.Length - 1] = matrix;
-                                drawList[key] = arr;
-                            }
-                            else
-                            {
-                                drawList.Add(key, new Matrix4x4[] { matrix });
-                            }
-                        }
-                    }
-
-                    //if (tilePrefabs.TryGetValue(tile.tile, out GameObject prefab))
-                    //{
-                    //    foreach (var renderer in prefab.GetComponentsInChildren<MeshRenderer>())
-                    //    {
-                    //        var meshFilter = renderer.GetComponent<MeshFilter>();
-                    //        var material = renderer.sharedMaterial;
-
-                    //        var prefabMatrix = renderer.GetComponent<Transform>().localToWorldMatrix;
-                    //        var modelMatrix = Matrix4x4.Translate(new Vector3(position.Position.x, 0f, position.Position.y)) * prefabMatrix;
-
-                    //        Graphics.DrawMesh(meshFilter.sharedMesh, modelMatrix, material, 0);
-                    //    }
-                    //}
-                });
+                return;
             }
 
+            // Detect changes in tiles
+            if (previousFrameTiles.IsCreated && worldStatus.TileCache.IsCreated)
+            {
+                for (int i = 0; i < previousFrameTiles.Length; i++)
+                {
+                    if (previousFrameTiles[i].tile != worldStatus.TileCache[i].tile)
+                    {
+                        dictionaryBuilt = false;
+                    }
+                }
+            }
+
+            // Copy tiles to previousFrameTiles
+            if (previousFrameTiles.IsCreated) previousFrameTiles.Dispose();
+            previousFrameTiles = new NativeArray<Tile>(worldStatus.TileCache.Length, Allocator.TempJob);
+            worldStatus.TileCache.CopyTo(previousFrameTiles);
+
+            if (!dictionaryBuilt)
+            {
+                BuildDictionary();
+            }
+
+            // Draw tile meshes with instancing
             foreach (var pair in drawList)
             {
                 var matrices = pair.Value;
 
-                for (int i = 0; i < matrices.Length; i += 1023)
+                for (int i = 0; i < matrices.Count; i += 1023)
                 {
-                    int valuesLeft = Mathf.Min(1023, matrices.Length - i);
+                    int valuesLeft = Mathf.Min(1023, matrices.Count - i);
                     Matrix4x4[] buffer = new Matrix4x4[valuesLeft];
-                    System.Array.Copy(pair.Value, i, buffer, 0, valuesLeft);
+
+                    matrices.CopyTo(i, buffer, 0, valuesLeft);
+
                     Graphics.DrawMeshInstanced(pair.Key.Mesh, 0, pair.Key.Material, buffer);
                 }
             }
+        }
+
+        private void BuildDictionary()
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
+            dictionaryBuilt = true;
+            drawList.Clear();
+
+            Entities.ForEach((Entity entity, ref Tile tile, ref TilePosition position) =>
+            {
+                if (tileMeshes.TryGetValue(tile.tile, out ProcessedMesh[] meshes))
+                {
+                    var tileOrigin = WorldCoordinateTools.WorldToUnityCoordinate(position.Value);
+                    var tileMatrix = Matrix4x4.Translate(tileOrigin) * Matrix4x4.Scale(new Vector3(GameManager.TILE_SIZE, GameManager.TILE_SIZE, GameManager.TILE_SIZE));
+
+                    foreach (var mesh in meshes)
+                    {
+                        var matrix = tileMatrix * mesh.Transform;
+
+                        var material = mesh.Material;
+
+                        // Override material in building tiles to give them different colors
+                        // TODO: This overrides the ground material also, which is wrong!
+                        if (tile.tile == TileContent.Building && EntityManager.HasComponent<PlayerID>(entity))
+                        {
+                            var materialIndex = EntityManager.GetComponentData<PlayerID>(entity).Value - 1;
+                            if (materialIndex >= 0 && materialIndex < GameManager.Instance.LoadedSettings.BuildingMaterials.Length)
+                            {
+                                material = GameManager.Instance.LoadedSettings.BuildingMaterials[materialIndex];
+                            }
+                            else Debug.LogWarning($"Invalid materialIndex {materialIndex} when drawing building with custom material");
+                        }
+
+                        var key = new MeshMaterialPair(mesh.Mesh, material);
+
+                        if (!drawList.ContainsKey(key))
+                        {
+                            drawList.Add(key, new List<Matrix4x4>());
+                        }
+                        drawList[key].Add(matrix);
+                    }
+                }
+            });
+
+            sw.Stop();
+            Debug.Log($"Dictionary build time = {sw.Elapsed.TotalMilliseconds:0.0F} ms");
         }
     }
 }

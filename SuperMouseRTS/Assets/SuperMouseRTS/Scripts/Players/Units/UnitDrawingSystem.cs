@@ -61,7 +61,23 @@ public class UnitDrawingSystem : ComponentSystem
             unitModels[id].Add(matrix);
         });
 
-        foreach(var keyValue in unitModels)
+        //foreach (var keyValue in unitModels)
+        //{
+        //    var materialIndex = keyValue.Key - 1;
+        //    if (!(materialIndex >= 0 && materialIndex < unitMaterials.Length))
+        //    {
+        //        Debug.LogWarning($"Failed to draw unit: index {materialIndex} outside of unitMaterials array");
+        //        continue;
+        //    }
+        //    var material = unitMaterials[materialIndex];
+        //    var modelList = keyValue.Value;
+        //    Matrix4x4[] matrices = new Matrix4x4[modelList.Count];
+        //    keyValue.Value.CopyTo(0, matrices, 0, modelList.Count);
+
+        //    Graphics.DrawMeshInstanced(unitMesh, 0, material, matrices);
+        //}
+
+        foreach (var keyValue in unitModels)
         {
             var materialIndex = keyValue.Key - 1;
             if (!(materialIndex >= 0 && materialIndex < unitMaterials.Length))
@@ -70,12 +86,32 @@ public class UnitDrawingSystem : ComponentSystem
                 continue;
             }
             var material = unitMaterials[materialIndex];
-            var modelList = keyValue.Value;
-            Matrix4x4[] matrices = new Matrix4x4[modelList.Count];
-            keyValue.Value.CopyTo(0, matrices, 0, modelList.Count);
+            var matrices = keyValue.Value;
 
-            Graphics.DrawMeshInstanced(unitMesh, 0, material, matrices);
+            for (int i = 0; i < matrices.Count; i += 1023)
+            {
+                int valuesLeft = Mathf.Min(1023, matrices.Count - i);
+                Matrix4x4[] buffer = new Matrix4x4[valuesLeft];
+                keyValue.Value.CopyTo(i, buffer, 0, valuesLeft);
+
+                Graphics.DrawMeshInstanced(unitMesh, 0, material, matrices);
+            }
+
         }
 
+        //foreach (var pair in drawList)
+        //{
+        //    var matrices = pair.Value;
+
+        //    for (int i = 0; i < matrices.Count; i += 1023)
+        //    {
+        //        int valuesLeft = Mathf.Min(1023, matrices.Count - i);
+        //        Matrix4x4[] buffer = new Matrix4x4[valuesLeft];
+
+        //        matrices.CopyTo(i, buffer, 0, valuesLeft);
+
+        //        Graphics.DrawMeshInstanced(pair.Key.Mesh, 0, pair.Key.Material, buffer);
+        //    }
+        //}
     }
 }
