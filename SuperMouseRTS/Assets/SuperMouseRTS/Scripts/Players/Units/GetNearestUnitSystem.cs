@@ -10,16 +10,8 @@ public class GetNearestUnitSystem : JobComponentSystem
 {
     private EntityQuery unitQuery;
 
-    // This declares a new kind of job, which is a unit of work to do.
-    // The job is declared as an IJobForEach<Translation, Rotation>,
-    // meaning it will process all entities in the world that have both
-    // Translation and Rotation components. Change it to process the component
-    // types you want.
-    //
-    // The job is also tagged with the BurstCompile attribute, which means
-    // that the Burst compiler will optimize it for the best performance.
     [BurstCompile]
-    struct GetNearestUnitSystemJob : IJobForEach<NearestUnit, Translation, PlayerID>
+    struct GetNearestUnitSystemJob : IJobForEachWithEntity<NearestUnit, Translation, PlayerID>
     {
         [ReadOnly, DeallocateOnJobCompletion]
         public NativeArray<Entity> OtherUnits;
@@ -28,13 +20,16 @@ public class GetNearestUnitSystem : JobComponentSystem
         [ReadOnly, DeallocateOnJobCompletion]
         public NativeArray<PlayerID> OtherIds;
 
-        public void Execute(ref NearestUnit nearestUnit, [ReadOnly] ref Translation translation, [ReadOnly] ref PlayerID id)
+        public void Execute(Entity ent, int index, ref NearestUnit nearestUnit, [ReadOnly] ref Translation translation, [ReadOnly] ref PlayerID id)
         {
             float bestAllyDist = float.MaxValue;
             float bestEnemyDist = float.MaxValue;
 
             for (int i = 0; i < OtherPositions.Length; i++)
             {
+                if (ent.Index == OtherUnits[i].Index)
+                    continue;
+
                 bool isAlly = id.Value == OtherIds[i].Value;
                 float dist = math.distance(translation.Value, OtherPositions[i].Value);
 
@@ -42,16 +37,18 @@ public class GetNearestUnitSystem : JobComponentSystem
                 {
                     if (dist < bestAllyDist)
                     {
-                        nearestUnit.DistToAlly = dist;
-                        nearestUnit.NearestAlly = OtherUnits[i];
+                        nearestUnit.Ally.Entity = OtherUnits[i];
+                        nearestUnit.Ally.Direction = OtherPositions[i].Value - translation.Value;
+                        bestAllyDist = dist;
                     }
                 }
                 else
                 {
                     if (dist < bestEnemyDist)
                     {
-                        nearestUnit.DistToEnemy = dist;
-                        nearestUnit.NearestEnemy = OtherUnits[i];
+                        nearestUnit.Enemy.Entity = OtherUnits[i];
+                        nearestUnit.Enemy.Direction = OtherPositions[i].Value - translation.Value;
+                        bestEnemyDist = dist;
                     }
                 }
             }

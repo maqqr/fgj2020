@@ -8,23 +8,39 @@ using static Unity.Mathematics.math;
 
 public class MovementSystem : JobComponentSystem
 {
-    // This declares a new kind of job, which is a unit of work to do.
-    // The job is declared as an IJobForEach<Translation, Rotation>,
-    // meaning it will process all entities in the world that have both
-    // Translation and Rotation components. Change it to process the component
-    // types you want.
-    //
-    // The job is also tagged with the BurstCompile attribute, which means
-    // that the Burst compiler will optimize it for the best performance.
     [BurstCompile]
-    struct MovementSystemJob : IJobForEach<Translation, MovementSpeed>
+    struct MovementSystemJob : IJobForEachWithEntity<Translation, MovementSpeed, NearestUnit>
     {
-        public float tilesize;
-        public float deltaTime;
+        public float Tilesize;
+        public float DeltaTime;
+        public float UnitRadius;
 
-        public void Execute(ref Translation translation, [ReadOnly] ref MovementSpeed speed)
+        public void Execute(Entity ent, int index, ref Translation translation, [ReadOnly] ref MovementSpeed speed, [ReadOnly] ref NearestUnit nearest)
         {
-            translation.Value += WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * deltaTime;
+            translation.Value += WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * DeltaTime;;
+
+            //var speedVector = WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * DeltaTime;
+            //var newPosition = translation.Value + speedVector;
+
+            //if (!(nearest.Ally.Direction.x == 0 && nearest.Ally.Direction.y == 0 && nearest.Ally.Direction.z == 0))
+            //{
+            //    var nearestAllyPosition = translation.Value + nearest.Ally.Direction;
+            //    float newDist = math.distance(newPosition, nearestAllyPosition);
+            //    if (newDist < UnitRadius * 2.0f && newDist > 0.0f)
+            //    {
+            //        var sideStepSpeed = WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.y, -speed.Value.x) * DeltaTime;
+            //        if (ent.Index % 2 == 0)
+            //        {
+            //            sideStepSpeed = -sideStepSpeed;
+            //        }
+
+            //        float3 dir = math.normalizesafe(-nearest.Ally.Direction);
+            //        translation.Value = nearestAllyPosition + dir * UnitRadius * 2.0f + sideStepSpeed * 0.2f;
+            //        return;
+            //    }
+            //}
+
+            //translation.Value = newPosition;
         }
     }
 
@@ -32,13 +48,11 @@ public class MovementSystem : JobComponentSystem
     {
         var job = new MovementSystemJob()
         {
-            deltaTime = Time.DeltaTime,
-            tilesize = GameManager.TILE_SIZE
+            DeltaTime = Time.DeltaTime,
+            Tilesize = GameManager.TILE_SIZE,
+            UnitRadius = GameManager.TILE_SIZE * 0.2f,
         };
 
-
-
-        // Now that the job is set up, schedule it to be run. 
         return job.Schedule(this, inputDependencies);
     }
 }

@@ -3,12 +3,15 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
+public struct Nearest
+{
+    public Entity Entity;
+    public float3 Direction;
+}
+
 [Serializable]
 public struct NearestUnit : IComponentData
 {
-    public Entity NearestAlly;
-    public float DistToAlly;
-
-    public Entity NearestEnemy;
-    public float DistToEnemy;
+    public Nearest Ally;
+    public Nearest Enemy;
 }
