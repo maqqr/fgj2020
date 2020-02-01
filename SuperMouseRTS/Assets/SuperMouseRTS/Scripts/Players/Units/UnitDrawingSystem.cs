@@ -11,7 +11,8 @@ public class UnitDrawingSystem : ComponentSystem
 {
     private Mesh unitMesh;
     private Material unitMaterial;
-    private float unitScale = 0.1f;
+
+    private const float unitScale = 0.05f * GameManager.TILE_SIZE;
 
     protected override void OnCreate()
     {
