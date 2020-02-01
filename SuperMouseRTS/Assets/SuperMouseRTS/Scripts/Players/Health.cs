@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 [Serializable]
-public struct Health : IComponentData
+public struct Health : IComponentData, IValue
 {
     public int Value;
     public int Maximum;
@@ -14,4 +14,6 @@ public struct Health : IComponentData
         Value = value;
         Maximum = maximum;
     }
+
+    public int ValueProperty { get => Value; set => Value = value; }
 }

@@ -17,7 +17,7 @@ public class UnitEventHandlingSystem : JobComponentSystem
         entityCommandBuffer = World.GetOrCreateSystem<EndSimulationEntityCommandBufferSystem>();
     }
 
-    //[BurstCompile]
+    [BurstCompile]
     struct UnitEventHandlingSystemJob : IJobForEachWithEntity<UnitEvent, OreResources, TilePosition>
     {
         [NativeDisableParallelForRestriction]
