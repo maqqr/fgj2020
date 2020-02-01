@@ -44,3 +44,6 @@ MonoBehaviour:
     Maximum: 50
   UnitAttackStrength: 5
   ResourceDeposits: 1000
+  UnitCapacity: 25
+  OreHaulSpeedFromDeposit: 3
+  UnitRangeOfOperation: 0.3

@@ -11,24 +11,29 @@ using static Unity.Mathematics.math;
 
 public class AIDecisionMakerSystem : JobComponentSystem
 {
+
+    public float TimeBetweenUpdates = 0.1f;
+    private float timePassed = 0f;
+
     [BurstCompile]
-    struct AIDecisionMakerJob : IJobForEach<Translation, MovementSpeed, OwnerBuilding>
+    struct AIDecisionMakerJob : IJobForEach<Translation, UnitTarget, OwnerBuilding>
     {
+        [DeallocateOnJobCompletion]
         [ReadOnly]
         public NativeArray<TilePosition> owners;
         [ReadOnly]
+        [DeallocateOnJobCompletion]
         public NativeArray<TilePosition> targets;
-        [ReadOnly]
-        public float speed;
-        
-        public void Execute([ReadOnly] ref Translation translation, ref MovementSpeed movement, [ReadOnly] ref OwnerBuilding owner)
+
+        public void Execute([ReadOnly] ref Translation translation, ref UnitTarget movement, [ReadOnly] ref OwnerBuilding owner)
         {
             for (int i = 0; i < owners.Length; i++)
             {
                 if(math.distance(owners[i].Value, owner.owner.Value) < 0.01f)
                 {
-                    float2 vec = new float2(targets[i].Value.x * GameManager.TILE_SIZE - translation.Value.x, targets[i].Value.y * GameManager.TILE_SIZE - translation.Value.z);
-                    movement.Value = math.normalize(vec) * speed;
+                    movement.Value = targets[i];
+                    movement.Operation = AIOperation.Collect;
+                    movement.Priority = Priorities.NotUrgent;
                 }
             }
         }
@@ -36,6 +41,14 @@ public class AIDecisionMakerSystem : JobComponentSystem
     
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
+        timePassed += Time.DeltaTime;
+        if(timePassed < TimeBetweenUpdates)
+        {
+            return inputDependencies;
+        }
+
+        timePassed -= TimeBetweenUpdates;
+
         var job = new AIDecisionMakerJob();
 
         EntityQuery query = EntityManager.CreateEntityQuery(typeof(PlayerID), typeof(OreResources), typeof(TilePosition));
@@ -48,14 +61,9 @@ public class AIDecisionMakerSystem : JobComponentSystem
         }
 
         job.owners = owners;
-        job.targets = targets; //TODO: dispose these?
-        job.speed = 5f;
+        job.targets = targets;
 
         inputDependencies = job.Schedule(this, inputDependencies);
-        inputDependencies.Complete();
-
-        owners.Dispose();
-        targets.Dispose();
 
         return inputDependencies;
     }
@@ -64,7 +72,7 @@ public class AIDecisionMakerSystem : JobComponentSystem
     {
         float closestResult = float.MaxValue;
         TilePosition target = pos; //Cant be unassigned
-        Entities.ForEach((ref OreHaulingSpeed haul, ref TilePosition resourcePosition) =>{
+        Entities.ForEach((ref OreHaulable haul, ref TilePosition resourcePosition) =>{
             float result = math.distancesq(pos.Value, resourcePosition.Value);
             if(result < closestResult)
             {

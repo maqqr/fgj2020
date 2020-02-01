@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 [System.Serializable]
 public struct TilePrefabPair
@@ -12,7 +13,6 @@ public class Settings : ScriptableObject
 {
     public int TilesHorizontally = 15;
     public int TilesVertically = 10;
-
     public TilePrefabPair[] TilePrefabs;
 
     public GameObject UnitPrefab;
@@ -31,4 +31,8 @@ public class Settings : ScriptableObject
     public Health UnitHealth = new Health(50, 50);
     public int UnitAttackStrength = 5;
     public int ResourceDeposits = 1000;
+
+    public int UnitCapacity = 25;
+    public int OreHaulSpeedFromDeposit = 1;
+    public float UnitRangeOfOperation = 0.3f;
 }

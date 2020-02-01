@@ -148,13 +148,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
-                    DOTSTools.SetOrAdd(EntityManager, ent, new SpawnTimer(-1));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new SpawnScheduler(0, -1));
                     DOTSTools.SetOrAdd(EntityManager, ent, new Health(100, 100));
                 }
                 if(TileContent == TileContent.Resources)
                 {
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.ResourceDeposits));
-                    DOTSTools.SetOrAdd(EntityManager, ent, new OreHaulingSpeed(30));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new OreHaulable());
                 }
             });
         }

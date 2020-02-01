@@ -8,6 +8,8 @@ public class GameInfoController : MonoBehaviour
 {
     [SerializeField]
     private Transform infoPanel = null;
+    [SerializeField]
+    private Settings s = null;
 
     private Dictionary<int, TextMeshProUGUI> unitCounts = new Dictionary<int, TextMeshProUGUI>();
 

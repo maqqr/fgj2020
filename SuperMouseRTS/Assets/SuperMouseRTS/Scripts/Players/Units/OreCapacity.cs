@@ -4,12 +4,14 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 [Serializable]
-public struct OreHaulingSpeed : IComponentData
+public struct OreCapacity : IComponentData
 {
     public int Value;
+    public int Maximum;
 
-    public OreHaulingSpeed(int value)
+    public OreCapacity(int value, int maximum)
     {
         Value = value;
+        Maximum = maximum;
     }
 }
