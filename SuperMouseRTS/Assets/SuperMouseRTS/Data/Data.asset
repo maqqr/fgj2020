@@ -16,7 +16,7 @@ MonoBehaviour:
   TilesVertically: 10
   TilePrefabs:
   - TileContent: 0
-    TilePrefab: {fileID: 7767969080429329121, guid: a4c0e57bdf4d99549ab534f5fba2fe85,
+    TilePrefab: {fileID: 5341504868376317154, guid: a4c0e57bdf4d99549ab534f5fba2fe85,
       type: 3}
   - TileContent: 1
     TilePrefab: {fileID: 7767969080429329121, guid: b8f65b188f81d2d4b8e694a0c9fd7082,
@@ -35,3 +35,4 @@ MonoBehaviour:
   PercentileOfTilesObstacles: 5
   TileSize: 1.5
   Players: 2
+  StartingResources: 100
