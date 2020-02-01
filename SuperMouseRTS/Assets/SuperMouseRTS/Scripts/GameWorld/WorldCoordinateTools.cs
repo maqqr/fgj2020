@@ -3,7 +3,7 @@ using System.Collections;
 using Unity.Mathematics;
 using System;
 
-public class WorldConversionTools
+public class WorldCoordinateTools
 {
     public static int2 UnityCoordinateToWorld(float3 position, float tileSize = 1.5f)
     {
@@ -14,6 +14,12 @@ public class WorldConversionTools
     public static float3 WorldToUnityCoordinate(int x, int y, float tileSize = 1.5f)
     {
         return new float3(x * tileSize, 0, y * tileSize);
+    }
+
+
+    public static float3 UnityCoordinateAsWorld(float x, float y)
+    {
+        return new float3(x, 0, y);
     }
 
 

@@ -35,4 +35,6 @@ MonoBehaviour:
   PercentileOfTilesObstacles: 5
   TileSize: 1.5
   Players: 2
-  StartingResources: 100
+  StartingResources: 1000
+  UnitCost: 50
+  UnitSpawnTime: 2
