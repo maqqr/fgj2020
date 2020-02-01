@@ -94,7 +94,7 @@ public class UnitDrawingSystem : ComponentSystem
                 Matrix4x4[] buffer = new Matrix4x4[valuesLeft];
                 keyValue.Value.CopyTo(i, buffer, 0, valuesLeft);
 
-                Graphics.DrawMeshInstanced(unitMesh, 0, material, matrices);
+                Graphics.DrawMeshInstanced(unitMesh, 0, material, buffer);
             }
 
         }
