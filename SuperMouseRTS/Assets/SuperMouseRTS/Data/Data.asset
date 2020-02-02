@@ -37,8 +37,8 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 63f7a599ac3d08641bf519fa841d623a, type: 2}
   BuildingMaterials: []
   PercentileOfTilesResources: 10
-  PercentileOfTilesRuins: 10
-  PercentileOfTilesObstacles: 5
+  PercentileOfTilesRuins: 3
+  PercentileOfTilesObstacles: 12
   Players: 2
   StartingResources: 100
   UnitCost: 50
