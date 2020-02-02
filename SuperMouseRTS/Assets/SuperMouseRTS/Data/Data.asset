@@ -28,7 +28,7 @@ MonoBehaviour:
     TilePrefab: {fileID: 5628718853427771372, guid: 7e8e03565516d0249a38409820a1f8b5,
       type: 3}
   - TileContent: 4
-    TilePrefab: {fileID: 169682469635925599, guid: 05abd9c0084148b42a0ae236a4b1e4d7,
+    TilePrefab: {fileID: 169682469635925599, guid: 94b925e272e5da0458c1dc82b909ef19,
       type: 3}
   UnitPrefab: {fileID: 7023420603831052497, guid: 53780df7b58b7f742a9651272fa1551b,
     type: 3}
@@ -42,7 +42,7 @@ MonoBehaviour:
   PercentileOfTilesRuins: 3
   PercentileOfTilesObstacles: 12
   Players: 2
-  StartingResources: 100
+  StartingResources: 200
   UnitCost: 50
   UnitSpawnTime: 1.2
   UnitHealth:

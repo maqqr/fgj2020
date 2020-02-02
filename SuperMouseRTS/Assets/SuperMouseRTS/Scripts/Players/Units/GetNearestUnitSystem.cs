@@ -25,6 +25,9 @@ public class GetNearestUnitSystem : JobComponentSystem
             float bestAllyDist = float.MaxValue;
             float bestEnemyDist = float.MaxValue;
 
+            nearestUnit.Enemy.Direction = float3(0f);
+            nearestUnit.Ally.Direction = float3(0f);
+
             for (int i = 0; i < OtherPositions.Length; i++)
             {
                 if (ent.Index == OtherUnits[i].Index)
