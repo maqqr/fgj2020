@@ -35,7 +35,9 @@ MonoBehaviour:
   UnitMaterials:
   - {fileID: 2100000, guid: 95ae1593f761ce54e92bf5d9f99985f0, type: 2}
   - {fileID: 2100000, guid: 63f7a599ac3d08641bf519fa841d623a, type: 2}
-  BuildingMaterials: []
+  BuildingMaterials:
+  - {fileID: 2100000, guid: 4d33ef34442e0bc4cae14b58c310bde2, type: 2}
+  - {fileID: 2100000, guid: 9c9685902cb607f40a5e1b536104c249, type: 2}
   PercentileOfTilesResources: 10
   PercentileOfTilesRuins: 3
   PercentileOfTilesObstacles: 12

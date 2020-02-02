@@ -87,6 +87,11 @@ public class MouseInputSystem : ComponentSystem
 
     private void BuyUnitsFromBuilding(PlayerID playerId, Entity selectedBuilding)
     {
+        if (!EntityManager.HasComponent<PlayerID>(selectedBuilding))
+        {
+            return;
+        }
+
         var buildingOwnership = EntityManager.GetComponentData<PlayerID>(selectedBuilding);
         bool isOwned = playerId.Value == buildingOwnership.Value;
 

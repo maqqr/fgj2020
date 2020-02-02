@@ -10,38 +10,36 @@ using static Unity.Mathematics.math;
 public class MovementSystem : JobComponentSystem
 {
     [BurstCompile]
-    struct MovementSystemJob : IJobForEachWithEntity<Translation, MovementSpeed, NearestUnit>
+    struct MovementSystemJob : IJobForEachWithEntity<Translation, Rotation, MovementSpeed, NearestUnit>
     {
         public float Tilesize;
         public float DeltaTime;
         public float UnitRadius;
 
-        public void Execute(Entity ent, int index, ref Translation translation, [ReadOnly] ref MovementSpeed speed, [ReadOnly] ref NearestUnit nearest)
+        public void Execute(Entity ent, int index, ref Translation translation, ref Rotation rotation, [ReadOnly] ref MovementSpeed speed, [ReadOnly] ref NearestUnit nearest)
         {
-            translation.Value += WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * DeltaTime;;
+            translation.Value += WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * DeltaTime; ;
 
-            //var speedVector = WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.x, speed.Value.y) * DeltaTime;
-            //var newPosition = translation.Value + speedVector;
+            float angle = atan2(speed.Value.y, speed.Value.x) - PI * 0.5f;
+            rotation.Value = EulerAngle(0f, angle, 0f);
+        }
 
-            //if (!(nearest.Ally.Direction.x == 0 && nearest.Ally.Direction.y == 0 && nearest.Ally.Direction.z == 0))
-            //{
-            //    var nearestAllyPosition = translation.Value + nearest.Ally.Direction;
-            //    float newDist = math.distance(newPosition, nearestAllyPosition);
-            //    if (newDist < UnitRadius * 2.0f && newDist > 0.0f)
-            //    {
-            //        var sideStepSpeed = WorldCoordinateTools.UnityCoordinateAsWorld(speed.Value.y, -speed.Value.x) * DeltaTime;
-            //        if (ent.Index % 2 == 0)
-            //        {
-            //            sideStepSpeed = -sideStepSpeed;
-            //        }
+        public quaternion EulerAngle(float yaw, float pitch, float roll) // yaw (Z), pitch (Y), roll (X)
+        {
+            float cy = cos(yaw * 0.5f);
+            float sy = sin(yaw * 0.5f);
+            float cp = cos(pitch * 0.5f);
+            float sp = sin(pitch * 0.5f);
+            float cr = cos(roll * 0.5f);
+            float sr = sin(roll * 0.5f);
 
-            //        float3 dir = math.normalizesafe(-nearest.Ally.Direction);
-            //        translation.Value = nearestAllyPosition + dir * UnitRadius * 2.0f + sideStepSpeed * 0.2f;
-            //        return;
-            //    }
-            //}
+            var q = new quaternion();
+            q.value.w = cy * cp * cr + sy * sp * sr;
+            q.value.x = cy * cp * sr - sy * sp * cr;
+            q.value.y = sy * cp * sr + cy * sp * cr;
+            q.value.z = sy * cp * cr - cy * sp * sr;
 
-            //translation.Value = newPosition;
+            return q;
         }
     }
 

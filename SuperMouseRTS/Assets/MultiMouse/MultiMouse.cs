@@ -239,9 +239,9 @@ public class MultiMouse : MonoBehaviour
 
     private void OnGUI()
     {
-        foreach (var pointer in GetMousePointers())
-        {
-            GUI.Label(new Rect(pointer.X, pointer.Y, 200, 20), "Mouse" + pointer.PlayerIndex + " (" + pointer.X + ", " + pointer.Y + ")");
-        }
+        //foreach (var pointer in GetMousePointers())
+        //{
+        //    GUI.Label(new Rect(pointer.X, pointer.Y, 200, 20), "Mouse" + pointer.PlayerIndex + " (" + pointer.X + ", " + pointer.Y + ")");
+        //}
     }
 }
