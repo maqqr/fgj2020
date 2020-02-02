@@ -50,6 +50,8 @@ public class SpawnSystem : JobComponentSystem
 
         public float UnitSpawnTime;
 
+        public uint Seed;
+
         public void Execute(Entity ent, int index, [ReadOnly] ref PlayerID id, [ReadOnly] ref TilePosition tile, ref SpawnScheduler timer)
         {
             timer.TimeLeftToSpawn = math.max(0, timer.TimeLeftToSpawn - deltaTime);
@@ -61,11 +63,15 @@ public class SpawnSystem : JobComponentSystem
 
             if (timer.TimeLeftToSpawn <= 0)
             {
+                var rnd = new Unity.Mathematics.Random(Seed);
+                var offset2 = rnd.NextFloat2(-tileSize, tileSize) * 0.2f;
+                var offset = float3(offset2.x, 0f, offset2.y);
+
                 //Really not sure if this id is the right one at all
                 Entity e = entityCommandBuffer.CreateEntity(index, arch);
                 entityCommandBuffer.SetComponent(index, e, new PlayerID(id.Value));
                 Translation trans = new Translation();
-                trans.Value = WorldCoordinateTools.WorldToUnityCoordinate(tile.Value, tileSize);
+                trans.Value = offset + WorldCoordinateTools.WorldToUnityCoordinate(tile.Value, tileSize);
                 entityCommandBuffer.SetComponent(index, e, trans);
                 entityCommandBuffer.SetComponent(index, e, new Health(health.Value, health.Maximum));
                 entityCommandBuffer.SetComponent(index, e, new OwnerBuilding(tile));
@@ -81,6 +87,8 @@ public class SpawnSystem : JobComponentSystem
         }
     }
 
+    private uint seed = 1;
+
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
         var job = new SpawnSystemJob();
@@ -93,6 +101,13 @@ public class SpawnSystem : JobComponentSystem
         job.tileSize = GameManager.TILE_SIZE;
         job.rangeOfOperation = GameManager.Instance.LoadedSettings.UnitRangeOfOperation;
         job.UnitSpawnTime = GameManager.Instance.LoadedSettings.UnitSpawnTime;
+        job.Seed = seed;
+
+        seed++;
+        if (seed > uint.MaxValue - 1)
+        {
+            seed = 1;
+        }
 
         inputDependencies = job.Schedule(this, inputDependencies);
         entityCommandBuffer.AddJobHandleForProducer(inputDependencies);

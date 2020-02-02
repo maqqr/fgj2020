@@ -44,7 +44,7 @@ MonoBehaviour:
   Players: 2
   StartingResources: 200
   UnitCost: 50
-  UnitSpawnTime: 1.2
+  UnitSpawnTime: 1
   UnitHealth:
     Value: 50
     Maximum: 50

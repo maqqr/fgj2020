@@ -65,6 +65,11 @@ public class GameManager
             throw new UnityException("Hammer time!");
         }
 
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+
+
         loadedSettings = settings;
 
         OnSettingsLoaded?.Invoke(loadedSettings);
