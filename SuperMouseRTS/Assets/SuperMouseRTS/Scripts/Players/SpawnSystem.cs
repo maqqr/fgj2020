@@ -46,9 +46,11 @@ public class SpawnSystem : JobComponentSystem
         public int capacity;
         [ReadOnly]
         public float rangeOfOperation;
+        [ReadOnly]
+        public float UnitSpawnTime;
         public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
 
-        public float UnitSpawnTime;
+        
 
         public uint Seed;
 
@@ -56,12 +58,7 @@ public class SpawnSystem : JobComponentSystem
         {
             timer.TimeLeftToSpawn = math.max(0, timer.TimeLeftToSpawn - deltaTime);
 
-            if (timer.SpawnsOrdered <= 0)
-            {
-                return;
-            }
-
-            if (timer.TimeLeftToSpawn <= 0)
+            if (timer.TimeLeftToSpawn <= 0 && timer.SpawnsUnderAway > 0)
             {
                 var rnd = new Unity.Mathematics.Random(Seed);
                 var offset2 = rnd.NextFloat2(-tileSize, tileSize) * 0.2f;
@@ -81,7 +78,13 @@ public class SpawnSystem : JobComponentSystem
                 entityCommandBuffer.SetComponent(index, e, new Rotation() { Value = new quaternion(0, 0f, 0f, 1f) });
                 entityCommandBuffer.SetComponent(index, e, new NearestUnit());
 
+                timer.SpawnsUnderAway--;
+            }
+
+            if(timer.SpawnsOrdered > 0 && timer.SpawnsUnderAway == 0)
+            {
                 timer.SpawnsOrdered--;
+                timer.SpawnsUnderAway++;
                 timer.TimeLeftToSpawn = UnitSpawnTime;
             }
         }
@@ -92,7 +95,7 @@ public class SpawnSystem : JobComponentSystem
     protected override JobHandle OnUpdate(JobHandle inputDependencies)
     {
         var job = new SpawnSystemJob();
-
+        
         job.deltaTime = Time.DeltaTime;
         job.entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter();
         job.arch = archetype;

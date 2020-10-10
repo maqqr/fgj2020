@@ -38,9 +38,10 @@ namespace Assets.SuperMouseRTS.Scripts.UI
         public static void ShowFactoryInformation(float3 position, OreResources resources, SpawnScheduler spawn)
         {
             instance.PositionPopup(new Vector3(position.x, position.y, position.z));
+            var spawns = spawn.SpawnsOrdered + spawn.SpawnsUnderAway;
             instance.ShowPopup(
                 $"Ore: {resources.Value}{Environment.NewLine}" +
-                (spawn.SpawnsOrdered > 0 ? $"Spawning: {spawn.SpawnsOrdered}" : ""));
+                (spawns > 0 ? $"Spawning: {spawns}" : ""));
         }
 
         private void PositionPopup(Vector3 vector3)
