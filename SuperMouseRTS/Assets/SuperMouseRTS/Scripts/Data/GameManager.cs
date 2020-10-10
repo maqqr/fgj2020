@@ -4,6 +4,7 @@ using UnityEngine.AddressableAssets;
 using System;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Threading.Tasks;
+using Unity.Assertions;
 
 public class GameManager
 {
@@ -20,6 +21,7 @@ public class GameManager
     public const float TILE_SIZE = 1.5f;
     public const int HAULING_SPEED = 5;
     public const float COOLDOWN_LENGTH = 1.5f;
+
     public const float MOVEMENT_SPEED = 2.1f;
 
     private Settings loadedSettings;
@@ -40,6 +42,7 @@ public class GameManager
 
 
     public Action<Settings> OnSettingsLoaded;
+    public Action<Settings> OnSettingsReloaded;
 
     public GameManager()
     {
@@ -53,8 +56,17 @@ public class GameManager
         operation.Completed += SettingsLoaded;
     }
 
-
-
+    public void ReloadSettings()
+    {
+        var operation = Addressables.LoadAssetAsync<Settings>(settingsDataAddress);
+        operation.Completed += delegate(AsyncOperationHandle<Settings> obj)
+        {
+            var settings = obj.Result;
+            Assert.IsNotNull(settings);
+            loadedSettings = settings;
+            OnSettingsReloaded?.Invoke(loadedSettings);
+        };
+    }
 
     private void SettingsLoaded(AsyncOperationHandle<Settings> obj)
     {

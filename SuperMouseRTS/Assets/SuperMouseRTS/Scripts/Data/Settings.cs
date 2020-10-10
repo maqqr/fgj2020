@@ -37,4 +37,18 @@ public class Settings : ScriptableObject
     public int UnitCapacity = 25;
     public int OreHaulSpeedFromDeposit = 1;
     public float UnitRangeOfOperation = 0.3f;
+
+    [Header(" -- Common health bar settings --")]
+    public bool ShowHpAlways = true;
+    public Mesh HealthBarMesh;
+    public Material[] HealthBarMaterials;
+    public Vector3 HealthBarRotation = Vector3.zero;
+
+    [Header(" -- Unit health bar settings --")]
+    public float UnitHealthBarY = 1.0f;
+    public float UnitHealthBarWidth = 0.5f;
+
+    [Header(" -- Building health bar settings --")]
+    public float BuildingHealthBarY = 1.0f;
+    public float BuildingHealthBarWidth = 1.5f;
 }

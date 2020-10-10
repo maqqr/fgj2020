@@ -53,3 +53,13 @@ MonoBehaviour:
   UnitCapacity: 25
   OreHaulSpeedFromDeposit: 3
   UnitRangeOfOperation: 0.4
+  HealthBarMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  HealthBarMaterials:
+  - {fileID: 2100000, guid: 0cbbba5b8ac06b1499946a53aca7dc78, type: 2}
+  - {fileID: 2100000, guid: 89d4e845d3dd0ef49a373aaf1dd07d60, type: 2}
+  - {fileID: 2100000, guid: fb5a0a7d0adb50f4f9718dcde880eb9f, type: 2}
+  HealthBarRotation: {x: 120, y: 0, z: 0}
+  UnitHealthBarY: 1
+  BuildingHealthBarY: 1
+  UnitHealthBarWidth: 0.5
+  BuildingHealthBarWidth: 1.5
