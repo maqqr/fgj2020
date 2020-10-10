@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.SuperMouseRTS.Scripts.Players;
+using System;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -39,6 +40,7 @@ public class PlayerStatusSystem : ComponentSystem
             Entity ent = EntityManager.CreateEntity();
             EntityManager.AddComponentData<PlayerID>(ent, new PlayerID(id));
             EntityManager.AddComponentData<Player>(ent, new Player());
+            EntityManager.AddComponentData(ent, new PlayerMouseInfoDelay(0.1f));
 
             infoController.AddPlayerInfo(id);
         }
