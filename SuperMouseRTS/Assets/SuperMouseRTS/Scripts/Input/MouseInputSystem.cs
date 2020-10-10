@@ -14,6 +14,15 @@ public class MouseInputSystem : ComponentSystem
     private RaycastSystem raycastSystem;
     private Dictionary<int, Entity> previouslySelectedEntity = new Dictionary<int, Entity>();
 
+    public Entity GetPreviouslySelectedEntity(int pointerIndex)
+    {
+        if (previouslySelectedEntity.ContainsKey(pointerIndex))
+        {
+            return previouslySelectedEntity[pointerIndex];
+        }
+        return Entity.Null;
+    }
+
     protected override void OnCreate()
     {
         raycastSystem = World.GetOrCreateSystem<RaycastSystem>();
