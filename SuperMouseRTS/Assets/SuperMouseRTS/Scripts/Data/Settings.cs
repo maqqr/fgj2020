@@ -59,4 +59,6 @@ public class Settings : ScriptableObject
     public Material circleMaterial;
     public float CircleMaxRadius = 2.2f;
     public float CircleGrowSpeed = 1.0f;
+    public Material LineMaterial;
+    public float ArrowHeadLength = 0.5f;
 }

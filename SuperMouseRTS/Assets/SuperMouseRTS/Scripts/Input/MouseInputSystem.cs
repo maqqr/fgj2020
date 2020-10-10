@@ -138,7 +138,7 @@ public class MouseInputSystem : SystemBase
                         break;
                 }               
             }
-        }).Run();
+        }).WithoutBurst().Run();
 
         previousPositions.Dispose();
     }

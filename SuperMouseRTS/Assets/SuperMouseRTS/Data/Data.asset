@@ -42,6 +42,7 @@ MonoBehaviour:
   PercentileOfTilesRuins: 3
   PercentileOfTilesObstacles: 12
   Players: 2
+  HumanPlayers: 1
   StartingResources: 200
   UnitCost: 50
   UnitSpawnTime: 1
@@ -58,7 +59,7 @@ MonoBehaviour:
   - {r: 0.114142045, g: 0.2727775, b: 0.8962264, a: 1}
   - {r: 0.18614274, g: 0.8396226, b: 0.21669234, a: 1}
   - {r: 0.8207547, g: 0.51931924, b: 0.15873085, a: 1}
-  ShowHpAlways: 1
+  ShowHpAlways: 0
   HealthBarMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   HealthBarMaterials:
   - {fileID: 2100000, guid: 0cbbba5b8ac06b1499946a53aca7dc78, type: 2}
@@ -72,3 +73,5 @@ MonoBehaviour:
   circleMaterial: {fileID: 2100000, guid: ea475d04045ca8548803ace42534d8d9, type: 2}
   CircleMaxRadius: 2.2
   CircleGrowSpeed: 5
+  LineMaterial: {fileID: 2100000, guid: f11d40ac18eb2de449e0698904a755f1, type: 2}
+  ArrowHeadLength: 0.5

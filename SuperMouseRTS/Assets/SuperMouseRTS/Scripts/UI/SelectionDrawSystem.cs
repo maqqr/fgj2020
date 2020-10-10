@@ -11,6 +11,7 @@ using System;
 using System.Net;
 using Assets.SuperMouseRTS.Scripts.GameWorld;
 using Unity.Assertions;
+using System.ComponentModel;
 
 namespace Assets.SuperMouseRTS.Scripts.UI
 {
@@ -48,6 +49,45 @@ namespace Assets.SuperMouseRTS.Scripts.UI
         private void Loaded(Settings obj)
         {
             Enabled = true;
+        }
+
+        private Vector3 GetSelectedEntityPosition(Entity entity)
+        {
+            if (EntityManager.HasComponent(entity, typeof(TilePosition)))
+            {
+                TilePosition tilePosition = EntityManager.GetComponentData<TilePosition>(entity);
+                return WorldCoordinateTools.WorldToUnityCoordinate(tilePosition.Value) + new float3(0.0f, 0.01f, 0.0f);
+            }
+            if (EntityManager.HasComponent(entity, typeof(Translation)))
+            {
+                return EntityManager.GetComponentData<Translation>(entity).Value;
+            }
+
+            throw new UnityException($"{nameof(SelectionDrawSystem)}.{nameof(GetSelectedEntityPosition)} needs fixing");
+        }
+
+        public static void DrawLine(Vector3 start, Vector3 end, Color color, float thickness)
+        {
+            Settings settings = GameManager.Instance.LoadedSettings;
+
+            Vector3 lineDir = end - start;
+            Vector3 middle = start + lineDir * 0.5f;
+            float lineLength = lineDir.magnitude;
+
+
+            float angle = Mathf.Atan2(lineDir.z, lineDir.x);
+
+            Quaternion rot = Quaternion.Euler(90.0f, 0.0f, 0.0f)
+                             * Quaternion.Euler(0.0f, 0.0f, Mathf.Rad2Deg * angle);
+
+            var matrix = Matrix4x4.Translate(middle + new Vector3(0.0f, 0.05f, 0.0f))
+                                * Matrix4x4.Rotate(rot)
+                                * Matrix4x4.Scale(new Vector3(lineLength, thickness, thickness));
+
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            block.SetColor("_BaseColor", color);
+
+            Graphics.DrawMesh(settings.HealthBarMesh, matrix, settings.LineMaterial, 0, null, 0, block);
         }
 
         protected override void OnUpdate()
@@ -115,6 +155,42 @@ namespace Assets.SuperMouseRTS.Scripts.UI
                 block.SetColor("_BaseColor", color);
 
                 Graphics.DrawMesh(settings.HealthBarMesh, matrix, settings.circleMaterial, 0, null, 0, block);
+            }
+
+            // Draw arrow from selected building to mouse
+            foreach (var pointer in MultiMouse.Instance.GetMousePointers())
+            {
+                Entity selectedEntity = mouseInputSystem.GetPreviouslySelectedEntity(pointer.PlayerIndex);
+                if (!selectionCircles.ContainsKey(selectedEntity))
+                    continue;
+
+                SelectionCircle circle = selectionCircles[selectedEntity];
+                Color lineColor = settings.PlayerColors[pointer.PlayerIndex];
+
+                Plane ground = new Plane(Vector3.up, Vector3.zero);
+                var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
+
+                Vector3 start = GetSelectedEntityPosition(selectedEntity);
+
+                if (!ground.Raycast(unityRay, out float rayDistance))
+                    continue;
+
+                Vector3 end = unityRay.GetPoint(rayDistance);
+                Vector3 lineDir = end - start;
+
+                // Shift start vector a bit to prevent intersecting the selected building's circle
+                start += lineDir.normalized * circle.Size;
+
+                // Draw line from building to cursor
+                DrawLine(start, end, lineColor, 0.1f);
+
+                // Draw the arrow head
+                float angle = Mathf.Atan2(lineDir.z, lineDir.x);
+                float offset = 15.0f;
+                Vector3 headEnd1 = end + settings.ArrowHeadLength * new Vector3(Mathf.Cos(angle + offset), 0.0f, Mathf.Sin(angle + offset));
+                Vector3 headEnd2 = end + settings.ArrowHeadLength * new Vector3(Mathf.Cos(angle - offset), 0.0f, Mathf.Sin(angle - offset));
+                DrawLine(end, headEnd1, lineColor, 0.1f);
+                DrawLine(end, headEnd2, lineColor, 0.1f);
             }
         }
     }
