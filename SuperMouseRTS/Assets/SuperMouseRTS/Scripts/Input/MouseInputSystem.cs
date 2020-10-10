@@ -1,4 +1,5 @@
 ﻿using Assets.SuperMouseRTS.Scripts.GameWorld;
+using Assets.SuperMouseRTS.Scripts.Players;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -9,8 +10,20 @@ using Unity.Transforms;
 using static Unity.Mathematics.math;
 
 [UpdateAfter(typeof(RaycastSystem))]
-public class MouseInputSystem : ComponentSystem
+public class MouseInputSystem : SystemBase
 {
+    private struct PreviousPosition
+    {
+        public PlayerID Id;
+        public int2 Position;
+
+        public PreviousPosition(PlayerID id, int2 position)
+        {
+            Id = id;
+            Position = position;
+        }
+    }
+
     private RaycastSystem raycastSystem;
     private Dictionary<int, Entity> previouslySelectedEntity = new Dictionary<int, Entity>();
 
@@ -21,7 +34,12 @@ public class MouseInputSystem : ComponentSystem
 
     protected override void OnUpdate()
     {
-        Entities.ForEach((ref Player player, ref PlayerID playerId) =>
+        var raycastSystem = this.raycastSystem;
+        var previousPositions = new NativeList<PreviousPosition>();
+        Entities
+            .WithAll<Player, PlayerID>()
+            .WithNone<AIPlayer>()
+            .ForEach((ref Player player, ref PlayerID playerId) =>
         {
             var pointerIndex = playerId.Value - 1;
             var pointer = MultiMouse.Instance.GetMouseByIndex(pointerIndex);
@@ -51,16 +69,7 @@ public class MouseInputSystem : ComponentSystem
                 {
                     // Cancel orders
                     var prevPos = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
-                    Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
-                    {
-                        if (owner.owner.Value.x == prevPos.x && owner.owner.Value.y == prevPos.y)
-                        {
-                            unitTarget.Priority = Priorities.NotSet;
-                            unitTarget.Operation = AIOperation.Unassigned;
-                        }
-                        UnityEngine.Debug.Log("Canceled order for unit");
-                    });
-
+                    previousPositions.Add(new PreviousPosition(playerId, prevPos));
                     previouslySelectedEntity.Remove(pointerIndex);
                 }
             }
@@ -80,7 +89,25 @@ public class MouseInputSystem : ComponentSystem
 
             player.LeftDownOnLastFrame = pointer.LeftButtonDown;
             player.RightDownOnLastFrame = pointer.RightButtonDown;
-        });
+        }).WithoutBurst().Run();
+
+        Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
+        {
+            foreach (var item in previousPositions)
+            {
+                if(id.Value != item.Id.Value)
+                {
+                    continue;
+                }
+                if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
+                {
+                    unitTarget.Priority = Priorities.NotSet;
+                    unitTarget.Operation = AIOperation.Unassigned;
+                }
+                UnityEngine.Debug.Log("Canceled order for unit");
+            }
+        }).Run();
+
     }
 
     private void BuyUnitsFromBuilding(PlayerID playerId, Entity selectedBuilding)

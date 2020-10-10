@@ -41,6 +41,10 @@ public class PlayerStatusSystem : ComponentSystem
             EntityManager.AddComponentData<PlayerID>(ent, new PlayerID(id));
             EntityManager.AddComponentData<Player>(ent, new Player());
             EntityManager.AddComponentData(ent, new PlayerMouseInfoDelay(0.1f));
+            if(i >= settings.HumanPlayers)
+            {
+                EntityManager.AddComponentData(ent, new AIPlayer(AIType.BloodThirsty));
+            }
 
             infoController.AddPlayerInfo(id);
         }
