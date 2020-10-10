@@ -39,6 +39,18 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
             matrixBuffer = new ComputeBuffer(maxBulletCount, sizeof(float) * 4 * 4);
         }
 
+        protected override void OnDestroy()
+        {
+            if (argsBuffer != null)
+            {
+                argsBuffer.Dispose();
+            }
+            if (matrixBuffer != null)
+            {
+                matrixBuffer.Dispose();
+            }
+        }
+
         private void Loaded(Settings obj)
         {
             Enabled = true;
