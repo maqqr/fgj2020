@@ -179,7 +179,7 @@ namespace Assets.SuperMouseRTS.Scripts.UI
                 Vector3 lineDir = end - start;
 
                 // Shift start vector a bit to prevent intersecting the selected building's circle
-                start += lineDir.normalized * circle.Size;
+                start += lineDir.normalized * circle.Size * settings.CircleMaxRadius * 0.5f;
 
                 // Draw line from building to cursor
                 DrawLine(start, end, lineColor, 0.1f);

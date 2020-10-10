@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System.Numerics;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -28,9 +29,9 @@ public class CombatSystem : JobComponentSystem
             if (!(nearest.Enemy.Direction.x == 0 && nearest.Enemy.Direction.y == 0 && nearest.Enemy.Direction.z == 0))
             {
                 float dist = math.length(nearest.Enemy.Direction);
+                var dir = math.normalizesafe(nearest.Enemy.Direction);
                 if (dist < 2.0f * GameManager.TILE_SIZE)
                 {
-                    var dir = math.normalizesafe(nearest.Enemy.Direction);
                     speed.Value = float2(dir.x, dir.z);
                 }
 
@@ -43,6 +44,20 @@ public class CombatSystem : JobComponentSystem
                         Entity ev = CommandBuffer.CreateEntity(index);
                         CommandBuffer.AddComponent<DamageEvent>(index, ev);
                         CommandBuffer.SetComponent(index, ev, new DamageEvent() { Target = nearest.Enemy.Entity });
+
+                        // Create bullet
+                        const float bulletVelocity = 1.0f;
+                        float3 bulletEnd = nearest.Enemy.Position;
+                        float3 bulletStart = bulletEnd - nearest.Enemy.Direction;
+
+                        float bulletLife = dist / bulletVelocity;
+                        float3 speed3 = dir * bulletVelocity;
+                        float2 speed2 = float2(speed3.x, speed3.z);
+
+                        Entity bulletEntity = CommandBuffer.CreateEntity(index);
+                        CommandBuffer.AddComponent(index, bulletEntity, new Bullet { LifeTimeLeft = bulletLife });
+                        CommandBuffer.AddComponent(index, bulletEntity, new Translation { Value = nearest.Enemy.Position });
+                        CommandBuffer.AddComponent(index, bulletEntity, new MovementSpeed { Value = speed2 });
                     }
                 }
             }
