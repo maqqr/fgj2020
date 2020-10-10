@@ -10,15 +10,19 @@ namespace Assets.SuperMouseRTS.Scripts.Players
     public struct AIPlayer : IComponentData
     {
         public AIType Type;
+        public int UnitsToConquer;
 
-        public AIPlayer(AIType type)
+        public AIPlayer(AIType type, int unitsToConquer)
         {
             Type = type;
+            UnitsToConquer = unitsToConquer;
         }
     }
 
     public enum AIType
     {
-        BloodThirsty
+        BloodThirsty,
+        Peaceful
+
     }
 }

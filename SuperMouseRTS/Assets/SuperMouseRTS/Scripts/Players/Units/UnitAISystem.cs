@@ -49,7 +49,7 @@ public class UnitAISystem : JobComponentSystem
                 case AIOperation.Collect:
                     if (capacity.Value >= capacity.Maximum)
                     {
-                        targetPosition = owner.owner.Value;
+                        targetPosition = owner.OwnerTile.Value;
                         if(canAct && HandleOreVicinity(ent, index, trans, capacity.Value, operationCapability, targetPosition))
                         {
                             capacity.Value = 0;

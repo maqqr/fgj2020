@@ -44,7 +44,9 @@ public class PlayerStatusSystem : ComponentSystem
             if(i >= settings.HumanPlayers)
             {
                 Debug.Log("Adding ai tag to player: " + id);
-                EntityManager.AddComponentData(ent, new AIPlayer(AIType.BloodThirsty));
+                var conquerPoint = UnityEngine.Random.Range(5, 26);
+                Debug.Log($"AI {id} Starts conquering with {conquerPoint} units");
+                EntityManager.AddComponentData(ent, new AIPlayer(AIType.BloodThirsty, conquerPoint));
             }
 
             infoController.AddPlayerInfo(id);
@@ -75,17 +77,6 @@ public class PlayerStatusSystem : ComponentSystem
         {
             infoController.SetPlayerInfo(i +1, counts[i].ToString());
         }
-        //Entities.ForEach((ref PlayerID id, ref OreResources resources, ref SpawnScheduler timer) =>
-        //{
-        //    if(timer.TimeLeftToSpawn <= 0 && resources.Value >= GameManager.Instance.LoadedSettings.UnitCost)
-        //    {
-        //        resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
-        
-        //        timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
-        //        timer.SpawnsOrdered++;
-        //    }
-        //});
-
     }
 
 }
