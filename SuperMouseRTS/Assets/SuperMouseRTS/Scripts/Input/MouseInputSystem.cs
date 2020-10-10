@@ -102,6 +102,7 @@ public class MouseInputSystem : SystemBase
             player.RightDownOnLastFrame = pointer.RightButtonDown;
         }).WithoutBurst().Run();
 
+        var playersToReset = new NativeList<int>(Allocator.Temp);
         Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
         {
             foreach (var item in previousPositions)
@@ -115,6 +116,7 @@ public class MouseInputSystem : SystemBase
                     case AIOperation.Unassigned:
                         unitTarget.Priority = Priorities.NotSet;
                         unitTarget.Operation = AIOperation.Unassigned;
+                        playersToReset.Add(item.Id.Value);
                         break;
                     case AIOperation.Attack:
                         if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
@@ -122,6 +124,7 @@ public class MouseInputSystem : SystemBase
                             unitTarget.Value = new TilePosition() { Value = item.Target };
                             unitTarget.Priority = Priorities.PlayerOrdered;
                             unitTarget.Operation = AIOperation.Attack;
+                            playersToReset.Add(item.Id.Value);
                         }
                         break;
                     case AIOperation.Collect:
@@ -132,6 +135,7 @@ public class MouseInputSystem : SystemBase
                             unitTarget.Value = new TilePosition() { Value = item.Target };
                             unitTarget.Priority = Priorities.PlayerOrdered;
                             unitTarget.Operation = AIOperation.Repair;
+                            playersToReset.Add(item.Id.Value);
                         }
                         break;
                     default:
@@ -140,6 +144,10 @@ public class MouseInputSystem : SystemBase
             }
         }).WithoutBurst().Run();
 
+        foreach (var player in playersToReset)
+        {
+            previouslySelectedEntity.Remove(player - 1);
+        }
         previousPositions.Dispose();
     }
 
