@@ -35,13 +35,17 @@ MonoBehaviour:
   UnitMaterials:
   - {fileID: 2100000, guid: 95ae1593f761ce54e92bf5d9f99985f0, type: 2}
   - {fileID: 2100000, guid: 63f7a599ac3d08641bf519fa841d623a, type: 2}
+  - {fileID: 2100000, guid: 54229600e4f73094e8060bb8079082e1, type: 2}
+  - {fileID: 2100000, guid: 1ddf384f89415f84c80f1bbd12acc917, type: 2}
   BuildingMaterials:
   - {fileID: 2100000, guid: 4d33ef34442e0bc4cae14b58c310bde2, type: 2}
   - {fileID: 2100000, guid: 9c9685902cb607f40a5e1b536104c249, type: 2}
+  - {fileID: 2100000, guid: 388b82c5769aa19439e503b2a2d23aff, type: 2}
+  - {fileID: 2100000, guid: b190057a02af23f4a8415338f0daef3e, type: 2}
   PercentileOfTilesResources: 10
   PercentileOfTilesRuins: 3
   PercentileOfTilesObstacles: 12
-  Players: 2
+  Players: 4
   HumanPlayers: 1
   StartingResources: 200
   UnitCost: 50
