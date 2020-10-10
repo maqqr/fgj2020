@@ -64,4 +64,8 @@ public class Settings : ScriptableObject
 
     [Header(" -- Bullets --")]
     public Material BulletMaterial;
+
+    [Header(" -- Effect prefabs --")]
+    public GameObject UnitDeathEffectPrefab;
+    public float ExplosionSize = 0.05f;
 }

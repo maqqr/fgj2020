@@ -80,3 +80,6 @@ MonoBehaviour:
   LineMaterial: {fileID: 2100000, guid: f11d40ac18eb2de449e0698904a755f1, type: 2}
   ArrowHeadLength: 0.5
   BulletMaterial: {fileID: 2100000, guid: 039b94039e3925b43b880a60a9704871, type: 2}
+  UnitDeathEffectPrefab: {fileID: 100000, guid: 4c5a17ca1f9fec84e941441ebb8be079,
+    type: 3}
+  ExplosionSize: 0.15

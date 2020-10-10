@@ -45,7 +45,9 @@ public class CombatSystem : JobComponentSystem
                         capability.Cooldown = GameManager.COOLDOWN_LENGTH;
                         Entity ev = CommandBuffer.CreateEntity(index);
                         CommandBuffer.AddComponent<DamageEvent>(index, ev);
+                        CommandBuffer.AddComponent<Translation>(index, ev);
                         CommandBuffer.SetComponent(index, ev, new DamageEvent() { Target = nearest.Enemy.Entity });
+                        CommandBuffer.SetComponent(index, ev, new Translation { Value = nearest.Enemy.Position });
 
                         // Create bullet
                         float3 bulletEnd = nearest.Enemy.Position;

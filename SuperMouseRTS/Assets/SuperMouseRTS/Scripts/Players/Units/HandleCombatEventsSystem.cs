@@ -11,18 +11,22 @@ public class HandleCombatEventsSystem : JobComponentSystem
     public EndSimulationEntityCommandBufferSystem entityCommandBuffer;
 
     [BurstCompile]
-    struct HandleCombatEventsSystemJob : IJobForEachWithEntity<DamageEvent>
+    struct HandleCombatEventsSystemJob : IJobForEachWithEntity<DamageEvent, Translation>
     {
         public uint InitialSeed;
         public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
-        public void Execute(Entity ent, int index, ref DamageEvent ev)
+        public void Execute(Entity ent, int index, ref DamageEvent ev, ref Translation translation)
         {
             var rnd = new Random(InitialSeed * 123 + ((uint)ent.Index) * 456);
 
             if (rnd.NextFloat(0.0f, 1.0f) < 0.05f)
             {
                 CommandBuffer.DestroyEntity(index, ev.Target);
+
+                Entity explosionEntity = CommandBuffer.CreateEntity(index);
+                CommandBuffer.AddComponent(index, explosionEntity, new ExplosionEvent());
+                CommandBuffer.AddComponent(index, explosionEntity, new Translation { Value = translation.Value });
             }
 
             CommandBuffer.DestroyEntity(index, ent);
