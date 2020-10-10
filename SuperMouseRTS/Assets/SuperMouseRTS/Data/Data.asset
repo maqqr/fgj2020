@@ -75,3 +75,4 @@ MonoBehaviour:
   CircleGrowSpeed: 5
   LineMaterial: {fileID: 2100000, guid: f11d40ac18eb2de449e0698904a755f1, type: 2}
   ArrowHeadLength: 0.5
+  BulletMaterial: {fileID: 2100000, guid: 039b94039e3925b43b880a60a9704871, type: 2}

@@ -30,13 +30,15 @@ public class CombatSystem : JobComponentSystem
             {
                 float dist = math.length(nearest.Enemy.Direction);
                 var dir = math.normalizesafe(nearest.Enemy.Direction);
-                if (dist < 2.0f * GameManager.TILE_SIZE)
+                if (dist < 2.5f * GameManager.TILE_SIZE)
                 {
                     speed.Value = float2(dir.x, dir.z);
                 }
 
-                if (dist < 0.2f * GameManager.TILE_SIZE)
+                if (dist < 0.8f * GameManager.TILE_SIZE)
                 {
+                    speed.Value = float2(0, 0);
+
                     capability.Cooldown -= DeltaTime;
                     if (capability.Cooldown <= 0f)
                     {

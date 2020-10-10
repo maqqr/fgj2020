@@ -53,6 +53,7 @@ Shader "Unlit/BulletShader"
 
             v2f vert(appdata v)
             {
+                UNITY_SETUP_INSTANCE_ID(v);
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -66,6 +67,8 @@ Shader "Unlit/BulletShader"
                 fixed4 col = tex2D(_MainTex, i.uv);
             // apply fog
             UNITY_APPLY_FOG(i.fogCoord, col);
+            col.r *= 20.0;
+            col.g *= 16.0;
             return col;
         }
         ENDCG
