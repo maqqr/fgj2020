@@ -23,6 +23,7 @@ public class GameManager
     public const float COOLDOWN_LENGTH = 1.5f;
 
     public const float MOVEMENT_SPEED = 2.1f;
+    public const float BULLET_VELOCITY = 2.0f;
 
     private Settings loadedSettings;
     public Settings LoadedSettings

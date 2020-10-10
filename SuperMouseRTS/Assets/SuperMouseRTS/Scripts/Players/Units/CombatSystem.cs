@@ -46,17 +46,16 @@ public class CombatSystem : JobComponentSystem
                         CommandBuffer.SetComponent(index, ev, new DamageEvent() { Target = nearest.Enemy.Entity });
 
                         // Create bullet
-                        const float bulletVelocity = 1.0f;
                         float3 bulletEnd = nearest.Enemy.Position;
                         float3 bulletStart = bulletEnd - nearest.Enemy.Direction;
 
-                        float bulletLife = dist / bulletVelocity;
-                        float3 speed3 = dir * bulletVelocity;
+                        float bulletLife = dist / GameManager.BULLET_VELOCITY;
+                        float3 speed3 = dir * GameManager.BULLET_VELOCITY;
                         float2 speed2 = float2(speed3.x, speed3.z);
 
                         Entity bulletEntity = CommandBuffer.CreateEntity(index);
                         CommandBuffer.AddComponent(index, bulletEntity, new Bullet { LifeTimeLeft = bulletLife });
-                        CommandBuffer.AddComponent(index, bulletEntity, new Translation { Value = nearest.Enemy.Position });
+                        CommandBuffer.AddComponent(index, bulletEntity, new Translation { Value = bulletStart });
                         CommandBuffer.AddComponent(index, bulletEntity, new MovementSpeed { Value = speed2 });
                     }
                 }
