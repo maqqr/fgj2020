@@ -10,6 +10,7 @@ using static Unity.Mathematics.math;
 using System;
 using System.Net;
 using Assets.SuperMouseRTS.Scripts.GameWorld;
+using UnityEngine.Rendering;
 
 namespace Assets.SuperMouseRTS.Scripts.UI
 {
@@ -125,7 +126,7 @@ namespace Assets.SuperMouseRTS.Scripts.UI
                     Matrix4x4[] buffer = new Matrix4x4[valuesLeft];
                     keyValue.Value.CopyTo(i, buffer, 0, valuesLeft);
 
-                    Graphics.DrawMeshInstanced(healthBarMesh, 0, material, buffer);
+                    Graphics.DrawMeshInstanced(healthBarMesh, 0, material, buffer, buffer.Length, null, ShadowCastingMode.Off, false);
                 }
             }
         }

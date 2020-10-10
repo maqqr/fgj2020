@@ -39,6 +39,8 @@ public class Settings : ScriptableObject
     public int OreHaulSpeedFromDeposit = 1;
     public float UnitRangeOfOperation = 0.3f;
 
+    public Color[] PlayerColors;
+
     [Header(" -- Common health bar settings --")]
     public bool ShowHpAlways = true;
     public Mesh HealthBarMesh;
@@ -52,4 +54,11 @@ public class Settings : ScriptableObject
     [Header(" -- Building health bar settings --")]
     public float BuildingHealthBarY = 1.0f;
     public float BuildingHealthBarWidth = 1.5f;
+
+    [Header(" -- Selection GUI stuff --")]
+    public Material circleMaterial;
+    public float CircleMaxRadius = 2.2f;
+    public float CircleGrowSpeed = 1.0f;
+    public Material LineMaterial;
+    public float ArrowHeadLength = 0.5f;
 }
