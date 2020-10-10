@@ -129,7 +129,7 @@ public class UnitAISystem : JobComponentSystem
             speed = GameManager.MOVEMENT_SPEED,
             entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
         };
-
+        
         // Now that the job is set up, schedule it to be run. 
         return job.Schedule(this, inputDependencies);
     }

@@ -37,6 +37,20 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             }
         }
 
+        public int TilesHorizontally
+        {
+            get
+            {
+                return settings.TilesHorizontally;
+            }
+        }
+
+
+        public static Tile FromCache(NativeArray<Tile> tiles, int x, int y, int tilesHorizontally)
+        {
+            return tiles[x + y * tilesHorizontally];
+        }
+
         public bool IsTileCacheReady
         {
             get
@@ -57,13 +71,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             }
         }
 
-        private TileContent this[int x, int y]
+        public TileContent this[int x, int y]
         {
             get
             {
                 return worldMap[y, x];
             }
-            set
+            private set
             {
                 worldMap[y, x] = value;
             }
@@ -135,7 +149,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private void AssignPlayerBuilding(List<int2> ruinsLocations)
         {
             float distanceCombined = 0;
-            Vector3 center = WorldCoordinateTools.WorldCenter(settings.TilesHorizontally, settings.TilesVertically, GameManager.TILE_SIZE);
+            Vector3 center = WorldCoordinateTools.WorldCenter(TilesHorizontally, settings.TilesVertically, GameManager.TILE_SIZE);
 
             ruinsLocations.ForEach(ruin =>
             {
@@ -210,8 +224,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private TileContent[,] GenerateWorld()
         {
 
-            int totalTiles = settings.TilesVertically * settings.TilesHorizontally;
-            TileContent[,] world = new TileContent[settings.TilesVertically, settings.TilesHorizontally];
+            int totalTiles = settings.TilesVertically * TilesHorizontally;
+            TileContent[,] world = new TileContent[settings.TilesVertically, TilesHorizontally];
 
             for (int y = 0; y < world.GetLength(0); y++)
             {
@@ -230,9 +244,9 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             var ruinsTiles = settings.PercentileOfTilesRuins * 0.01f * totalTiles;
             var obstacles = settings.PercentileOfTilesObstacles * 0.01f * totalTiles;
 
-            TryGenerateTileOfType(rand, ruinsTiles, TileContent.Ruins, settings.TilesHorizontally, settings.TilesVertically);
-            TryGenerateTileOfType(rand, resourceTiles, TileContent.Resources, settings.TilesHorizontally, settings.TilesVertically);
-            TryGenerateTileOfType(rand, obstacles, TileContent.Obstacle, settings.TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, ruinsTiles, TileContent.Ruins, TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, resourceTiles, TileContent.Resources, TilesHorizontally, settings.TilesVertically);
+            TryGenerateTileOfType(rand, obstacles, TileContent.Obstacle, TilesHorizontally, settings.TilesVertically);
 
             return world;
         }
@@ -399,12 +413,12 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             //    latestJobHandle.Complete();
             //}
 
-            tileCache = new NativeArray<Tile>(settings.TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
+            tileCache = new NativeArray<Tile>(TilesHorizontally * settings.TilesVertically, Allocator.TempJob);
 
             var job = new GenerateTileCache()
             {
                 insertHere = tileCache,
-                tilesHorizontally = settings.TilesHorizontally
+                tilesHorizontally = TilesHorizontally
             };
 
             var removeResourcesJob = new RemoveEmptyResourceJob

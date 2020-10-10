@@ -112,17 +112,6 @@ public class MouseInputSystem : ComponentSystem
         {
             UnityEngine.Debug.Log("Clicked building is not owned!");
         }
-
-        //Entities.ForEach((ref PlayerID id, ref OreResources resources, ref SpawnTimer timer) =>
-        //{
-        //    if (timer.TimeLeftToSpawn < 0 && resources.Value >= GameManager.Instance.LoadedSettings.UnitCost)
-        //    {
-        //        resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
-
-        //        timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
-
-        //    }
-        //});
     }
 
     private void BuildingClicked(PlayerID playerId, Entity selectedBuilding)
