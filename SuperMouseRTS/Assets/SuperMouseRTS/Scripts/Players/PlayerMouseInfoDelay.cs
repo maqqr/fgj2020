@@ -18,7 +18,7 @@ namespace Assets.SuperMouseRTS.Scripts.Players
         {
             Delay = delay;
             DelayConsumed = 0;
-            EntityTargeted = new Entity();
+            EntityTargeted = Entity.Null;
             IsShowing = false;
         }
     }

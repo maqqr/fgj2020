@@ -38,6 +38,11 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     HandleRay(ref delay, deltaTime, hit);
                 }
+                else
+                {
+                    delay.EntityTargeted = Entity.Null;
+                    HideFactoryPopup(ref delay);
+                }
             }).WithoutBurst().Run();
 
 
@@ -46,13 +51,6 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         private void HandleRay(ref PlayerMouseInfoDelay delay, float deltaTime, RaycastHit hit)
         {
             var isSame = hit.Entity == delay.EntityTargeted;
-            if (!hit.Hit)
-            {
-                delay.DelayConsumed = delay.Delay;
-                delay.IsShowing = false;
-                InformationPopupController.DisablePopup();
-                return;
-            }
 
             if (isSame)
             {
@@ -61,10 +59,9 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             else
             {
                 delay.EntityTargeted = hit.Entity;
-                delay.DelayConsumed = delay.Delay;
-                delay.IsShowing = false;
-                InformationPopupController.DisablePopup();
+                HideFactoryPopup(ref delay);
             }
+
             if (delay.DelayConsumed <= 0)
             {
                 delay.IsShowing = true;
@@ -80,6 +77,13 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 }
             }
 
+        }
+
+        private static void HideFactoryPopup(ref PlayerMouseInfoDelay delay)
+        {
+            delay.DelayConsumed = delay.Delay;
+            delay.IsShowing = false;
+            InformationPopupController.DisablePopup();
         }
     }
 }
