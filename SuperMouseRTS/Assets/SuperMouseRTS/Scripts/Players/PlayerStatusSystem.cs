@@ -43,6 +43,7 @@ public class PlayerStatusSystem : ComponentSystem
             EntityManager.AddComponentData(ent, new PlayerMouseInfoDelay(0.1f));
             if(i >= settings.HumanPlayers)
             {
+                Debug.Log("Adding ai tag to player: " + id);
                 EntityManager.AddComponentData(ent, new AIPlayer(AIType.BloodThirsty));
             }
 

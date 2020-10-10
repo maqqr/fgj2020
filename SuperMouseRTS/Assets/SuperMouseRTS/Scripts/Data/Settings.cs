@@ -25,7 +25,7 @@ public class Settings : ScriptableObject
 
 
     public int Players = 2;
-    public int HumanPlayers = 1;
+    public int HumanPlayers = 0;
     public int StartingResources = 100;
 
     public int UnitCost = 50;
