@@ -39,6 +39,9 @@ public class Settings : ScriptableObject
     public int OreHaulSpeedFromDeposit = 1;
     public float UnitRangeOfOperation = 0.3f;
 
+    public int PassiveOreGenerationAmount = 5;
+    public float PassiveOreGenerationInterval = 4;
+
     public Color[] PlayerColors;
 
     [Header(" -- Common health bar settings --")]
@@ -68,4 +71,5 @@ public class Settings : ScriptableObject
     [Header(" -- Effect prefabs --")]
     public GameObject UnitDeathEffectPrefab;
     public float ExplosionSize = 0.05f;
+
 }

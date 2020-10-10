@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.SuperMouseRTS.Scripts.Players;
+using System;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -197,6 +198,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     DOTSTools.SetOrAdd(EntityManager, ent, new PlayerID(playerID++));
                     DOTSTools.SetOrAdd(EntityManager, ent, new OreResources(settings.StartingResources));
+                    DOTSTools.SetOrAdd(EntityManager, ent, new PassiveOreGeneration(settings.PassiveOreGenerationAmount, settings.PassiveOreGenerationInterval));
                     DOTSTools.SetOrAdd(EntityManager, ent, new SpawnScheduler(0, -1));
                 }
 
@@ -321,6 +323,10 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             public float TileSize;
             [ReadOnly]
             public int StartingResources;
+            [ReadOnly]
+            public int PassiveOreGenerationAmount;
+            [ReadOnly]
+            public float PassiveOreGenerationInterval;
 
             public EntityCommandBuffer.ParallelWriter concurrentBuffer;
             public void Execute(Entity ent, int index, ref Tile tile, [ReadOnly] ref TilePosition pos, [ReadOnly] ref Health health)
@@ -357,6 +363,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                     concurrentBuffer.AddComponent(index, ent, new OreResources(StartingResources));
                     concurrentBuffer.AddComponent(index, ent, new SpawnScheduler(0, -1));
                     concurrentBuffer.SetComponent(index, ent, new Health(health.Maximum, health.Maximum));
+                    concurrentBuffer.AddComponent(index, ent, new PassiveOreGeneration(PassiveOreGenerationAmount, PassiveOreGenerationInterval));
                 }
             }
         }
@@ -378,6 +385,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                     entityCommandBuffer.RemoveComponent<PlayerID>(index, ent);
                     entityCommandBuffer.RemoveComponent<OreResources>(index, ent);
                     entityCommandBuffer.RemoveComponent<SpawnScheduler>(index, ent);
+                    entityCommandBuffer.RemoveComponent<PassiveOreGeneration>(index, ent);
                     entityCommandBuffer.SetComponent<Health>(index, ent, new Health(0, health.Maximum));
                     tile.tile = TileContent.Ruins;
 
@@ -442,6 +450,8 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 Players = settings.Players,
                 TileSize = GameManager.TILE_SIZE,
                 StartingResources = settings.StartingResources,
+                PassiveOreGenerationAmount = settings.PassiveOreGenerationAmount,
+                PassiveOreGenerationInterval = settings.PassiveOreGenerationInterval,
                 concurrentBuffer = this.entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
             };
 
