@@ -1,4 +1,5 @@
 ﻿using Assets.SuperMouseRTS.Scripts.GameWorld;
+using Assets.SuperMouseRTS.Scripts.Players;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -9,8 +10,26 @@ using Unity.Transforms;
 using static Unity.Mathematics.math;
 
 [UpdateAfter(typeof(RaycastSystem))]
-public class MouseInputSystem : ComponentSystem
+public class MouseInputSystem : SystemBase
 {
+    private struct PreviousPosition
+    {
+        public PlayerID Id;
+        public int2 Position;
+        public int2 Target;
+        public AIOperation Operation;
+
+        public PreviousPosition(PlayerID id, int2 position, int2 target, AIOperation operation)
+        {
+            Id = id;
+            Position = position;
+            Target = target;
+            Operation = operation;
+        }
+    }
+
+    private readonly int2 DeselectTarget = new Unity.Mathematics.int2(-10000, -10000); 
+
     private RaycastSystem raycastSystem;
     private Dictionary<int, Entity> previouslySelectedEntity = new Dictionary<int, Entity>();
 
@@ -30,7 +49,12 @@ public class MouseInputSystem : ComponentSystem
 
     protected override void OnUpdate()
     {
-        Entities.ForEach((ref Player player, ref PlayerID playerId) =>
+        var raycastSystem = this.raycastSystem;
+        var previousPositions = new NativeList<PreviousPosition>(Allocator.Temp);
+        Entities
+            .WithAll<Player, PlayerID>()
+            .WithNone<AIPlayer>()
+            .ForEach((ref Player player, ref PlayerID playerId) =>
         {
             var pointerIndex = playerId.Value - 1;
             var pointer = MultiMouse.Instance.GetMouseByIndex(pointerIndex);
@@ -45,31 +69,18 @@ public class MouseInputSystem : ComponentSystem
 
             if (leftClicked)
             {
-                //UnityEngine.Debug.Log($"Mouse{pointerIndex} left click");
-
                 var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
                 var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
 
                 if (raycastSystem.Raycast(ray, out RaycastHit hit))
                 {
-                    UnityEngine.Debug.Log("Hit entity " + hit.Entity.Index);
-
-                    BuildingClicked(playerId, hit.Entity);
+                    BuildingClicked(playerId, hit.Entity, previousPositions);
                 }
                 else if (previouslySelectedEntity.ContainsKey(pointerIndex))
                 {
                     // Cancel orders
                     var prevPos = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
-                    Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
-                    {
-                        if (owner.owner.Value.x == prevPos.x && owner.owner.Value.y == prevPos.y)
-                        {
-                            unitTarget.Priority = Priorities.NotSet;
-                            unitTarget.Operation = AIOperation.Unassigned;
-                        }
-                        UnityEngine.Debug.Log("Canceled order for unit");
-                    });
-
+                    previousPositions.Add(new PreviousPosition(playerId, prevPos, DeselectTarget, AIOperation.Unassigned));
                     previouslySelectedEntity.Remove(pointerIndex);
                 }
             }
@@ -89,7 +100,47 @@ public class MouseInputSystem : ComponentSystem
 
             player.LeftDownOnLastFrame = pointer.LeftButtonDown;
             player.RightDownOnLastFrame = pointer.RightButtonDown;
-        });
+        }).WithoutBurst().Run();
+
+        Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
+        {
+            foreach (var item in previousPositions)
+            {
+                if(id.Value != item.Id.Value)
+                {
+                    continue;
+                }
+                switch (item.Operation)
+                {
+                    case AIOperation.Unassigned:
+                        unitTarget.Priority = Priorities.NotSet;
+                        unitTarget.Operation = AIOperation.Unassigned;
+                        break;
+                    case AIOperation.Attack:
+                        if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
+                        {
+                            unitTarget.Value = new TilePosition() { Value = item.Target };
+                            unitTarget.Priority = Priorities.PlayerOrdered;
+                            unitTarget.Operation = AIOperation.Attack;
+                        }
+                        break;
+                    case AIOperation.Collect:
+                        break;
+                    case AIOperation.Repair:
+                        if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
+                        {
+                            unitTarget.Value = new TilePosition() { Value = item.Target };
+                            unitTarget.Priority = Priorities.PlayerOrdered;
+                            unitTarget.Operation = AIOperation.Repair;
+                        }
+                        break;
+                    default:
+                        break;
+                }               
+            }
+        }).Run();
+
+        previousPositions.Dispose();
     }
 
     private void BuyUnitsFromBuilding(PlayerID playerId, Entity selectedBuilding)
@@ -123,7 +174,7 @@ public class MouseInputSystem : ComponentSystem
         }
     }
 
-    private void BuildingClicked(PlayerID playerId, Entity selectedBuilding)
+    private void BuildingClicked(PlayerID playerId, Entity selectedBuilding, NativeList<PreviousPosition> cache)
     {
         var pointerIndex = playerId.Value - 1;
 
@@ -136,19 +187,7 @@ public class MouseInputSystem : ComponentSystem
             {
                 var selectedPosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding).Value;
                 var prevSelectedPosition = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
-
-                // Go through entities that were spawned from previouslySelectedEntity[pointerIndex]
-                Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
-                {
-                    if (owner.owner.Value.x == prevSelectedPosition.x && owner.owner.Value.y == prevSelectedPosition.y)
-                    {
-                        unitTarget.Value = new TilePosition() { Value = selectedPosition };
-                        unitTarget.Priority = Priorities.PlayerOrdered;
-                        unitTarget.Operation = AIOperation.Repair;
-
-                        UnityEngine.Debug.Log("Unit ordered to repair " + selectedBuilding);
-                    }
-                });
+                cache.Add(new PreviousPosition(playerId, prevSelectedPosition, selectedPosition, AIOperation.Repair));
             }
         }
         else if (tile.tile == TileContent.Building)
@@ -167,19 +206,7 @@ public class MouseInputSystem : ComponentSystem
                     var selectedPosition = EntityManager.GetComponentData<TilePosition>(selectedBuilding).Value;
                     var prevSelectedPosition = EntityManager.GetComponentData<TilePosition>(previouslySelectedEntity[pointerIndex]).Value;
 
-                    // Go through entities that were spawned from previouslySelectedEntity[pointerIndex]
-                    Entities.ForEach((ref PlayerID id, ref OwnerBuilding owner, ref UnitTarget unitTarget) =>
-                    {
-                        if (owner.owner.Value.x == prevSelectedPosition.x && owner.owner.Value.y == prevSelectedPosition.y)
-                        {
-                            unitTarget.Value = new TilePosition() { Value = selectedPosition };
-                            unitTarget.Priority = Priorities.PlayerOrdered;
-                            unitTarget.Operation = AIOperation.Attack;
-
-                            UnityEngine.Debug.Log("Unit ordered to attack " + selectedBuilding);
-                        }
-                    });
-
+                    cache.Add(new PreviousPosition(playerId, prevSelectedPosition, selectedPosition, AIOperation.Attack));
                     previouslySelectedEntity.Remove(pointerIndex);
                 }
                 else
