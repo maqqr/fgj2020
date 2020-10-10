@@ -8,6 +8,7 @@ using Unity.Transforms;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
+[UpdateInGroup(typeof(PresentationSystemGroup))]
 public class UnitDrawingSystem : ComponentSystem
 {
     private Mesh unitMesh;

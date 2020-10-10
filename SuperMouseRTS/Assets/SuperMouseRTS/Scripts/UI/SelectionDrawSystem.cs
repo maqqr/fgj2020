@@ -27,7 +27,7 @@ namespace Assets.SuperMouseRTS.Scripts.UI
         }
     }
 
-    [UpdateAfter(typeof(MouseInputSystem)), AlwaysUpdateSystem]
+    [UpdateInGroup(typeof(PresentationSystemGroup)), AlwaysUpdateSystem]
     public class SelectionDrawSystem : SystemBase
     {
         class SelectionCircle

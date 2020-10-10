@@ -14,6 +14,7 @@ using UnityEngine.Rendering;
 
 namespace Assets.SuperMouseRTS.Scripts.UI
 {
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class HealthDrawSystem : SystemBase
     {
         private Mesh healthBarMesh;
