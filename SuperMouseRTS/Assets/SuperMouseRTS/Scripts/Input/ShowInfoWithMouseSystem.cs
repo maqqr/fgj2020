@@ -12,56 +12,78 @@ using UnityEngine;
 namespace Assets.SuperMouseRTS.Scripts.GameWorld
 {
     [UpdateAfter(typeof(RaycastSystem))]
-    public class ShowInfoWithMouseSystem : ComponentSystem
+    public class ShowInfoWithMouseSystem : SystemBase
     {
         private RaycastSystem raycastSystem;
-        private FactoryInformationPopupController factoryInfo;
 
         protected override void OnCreate()
         {
             raycastSystem = World.GetOrCreateSystem<RaycastSystem>();
-            factoryInfo = GameObject.FindObjectOfType<FactoryInformationPopupController>();
         }
 
         protected override void OnUpdate()
         {
-            //float deltaTime = UnityEngine.Time.deltaTime;
-            //Entities.ForEach((ref PlayerMouseInfoDelay delay, in Player player, in PlayerID playerId) =>
-            //{
-            //    var pointerIndex = playerId.Value - 1;
-            //    var pointer = MultiMouse.Instance.GetMouseByIndex(pointerIndex);
-            //    if (pointer == null)
-            //    {
-            //        return;
-            //    }
-            //    var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
-            //    var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
-            //    if (raycastSystem.Raycast(ray, out RaycastHit hit))
-            //    {
-            //        var isSame = hit.Entity == delay.EntityTargeted;
-            //        if (!hit.Hit)
-            //        {
-            //            delay.DelayConsumed = delay.Delay;
-            //        }
+            float deltaTime = UnityEngine.Time.deltaTime;
+            Entities.ForEach((ref PlayerMouseInfoDelay delay, ref Player player, in PlayerID playerId) =>
+            {
+                var pointerIndex = playerId.Value - 1;
+                var pointer = MultiMouse.Instance.GetMouseByIndex(pointerIndex);
+                if (pointer == null)
+                {
+                    return;
+                }
+                var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
+                var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
+                if (raycastSystem.Raycast(ray, out RaycastHit hit))
+                {
+                    HandleRay(ref delay, deltaTime, hit);
+                }
+                else
+                {
+                    delay.EntityTargeted = Entity.Null;
+                    HideFactoryPopup(ref delay);
+                }
+            }).WithoutBurst().Run();
 
-            //        if (isSame)
-            //        {
-            //            delay.DelayConsumed -= deltaTime;
-            //        }
-            //        else
-            //        {
-            //            delay.EntityTargeted = hit.Entity;
-            //            delay.DelayConsumed = delay.Delay;
-            //        }
-            //        if(delay.DelayConsumed <= 0)
-            //        {
-            //            var translation = EntityManager.GetComponentData<Translation>(delay.EntityTargeted);
-            //        }
-            //    }               
-                
-            //});
-            //factoryInfo.BroadcastMessage("");
 
+        }
+
+        private void HandleRay(ref PlayerMouseInfoDelay delay, float deltaTime, RaycastHit hit)
+        {
+            var isSame = hit.Entity == delay.EntityTargeted;
+
+            if (isSame)
+            {
+                delay.DelayConsumed -= deltaTime;
+            }
+            else
+            {
+                delay.EntityTargeted = hit.Entity;
+                HideFactoryPopup(ref delay);
+            }
+
+            if (delay.DelayConsumed <= 0)
+            {
+                delay.IsShowing = true;
+                var targetEntity = delay.EntityTargeted;
+                if (EntityManager.HasComponent<OreResources>(targetEntity))
+                {
+                    var tilePosition = EntityManager.GetComponentData<TilePosition>(targetEntity);
+                    var resources = EntityManager.GetComponentData<OreResources>(targetEntity);
+                    var spawn = EntityManager.GetComponentData<SpawnScheduler>(targetEntity);
+                    var pos = WorldCoordinateTools.WorldToUnityCoordinate(tilePosition.Value.x, tilePosition.Value.y);
+
+                    InformationPopupController.ShowFactoryInformation(pos, resources, spawn);
+                }
+            }
+
+        }
+
+        private static void HideFactoryPopup(ref PlayerMouseInfoDelay delay)
+        {
+            delay.DelayConsumed = delay.Delay;
+            delay.IsShowing = false;
+            InformationPopupController.DisablePopup();
         }
     }
 }

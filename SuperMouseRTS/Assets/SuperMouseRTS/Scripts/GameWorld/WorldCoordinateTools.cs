@@ -5,7 +5,7 @@ using System;
 
 public class WorldCoordinateTools
 {
-    public static int2 UnityCoordinateToWorld(float3 position, float tileSize = 1.5f)
+    public static int2 UnityCoordinateToWorld(float3 position, float tileSize = GameManager.TILE_SIZE)
     {
         return new int2(Mathf.FloorToInt((position.x + Mathf.Epsilon) / tileSize), Mathf.FloorToInt((position.z + Mathf.Epsilon) / tileSize));
     }
@@ -16,7 +16,7 @@ public class WorldCoordinateTools
         return x + y * tilesVertically;
     }
 
-    public static float3 WorldToUnityCoordinate(int x, int y, float tileSize = 1.5f)
+    public static float3 WorldToUnityCoordinate(int x, int y, float tileSize = GameManager.TILE_SIZE)
     {
         return new float3(x * tileSize, 0, y * tileSize);
     }
@@ -28,24 +28,24 @@ public class WorldCoordinateTools
     }
 
 
-    public static float3 WorldToUnityCoordinate(int2 position, float tileSize = 1.5f)
+    public static float3 WorldToUnityCoordinate(int2 position, float tileSize = GameManager.TILE_SIZE)
     {
 
         return WorldToUnityCoordinate(position.x, position.y, tileSize);
     }
 
 
-    public static float LevelWidth(int tilesVertically, float tileSize = 1.5f)
+    public static float LevelWidth(int tilesVertically, float tileSize = GameManager.TILE_SIZE)
     {
         return tilesVertically * tileSize;
     }
 
-    public static float LevelHeight(int tilesHorizontally, float tileSize = 1.5f)
+    public static float LevelHeight(int tilesHorizontally, float tileSize = GameManager.TILE_SIZE)
     {
         return tilesHorizontally * tileSize;
     }
 
-    internal static Vector3 WorldCenter(int tilesHorizontally, int tilesVertically, float tileSize)
+    internal static Vector3 WorldCenter(int tilesHorizontally, int tilesVertically, float tileSize = GameManager.TILE_SIZE)
     {
         return new Vector3(tilesHorizontally * tileSize * 0.5f, 0, tilesVertically * tileSize * 0.5f);
     }
