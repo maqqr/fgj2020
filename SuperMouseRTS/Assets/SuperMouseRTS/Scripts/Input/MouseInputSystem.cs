@@ -169,7 +169,6 @@ public class MouseInputSystem : SystemBase
             if (resources.Value >= GameManager.Instance.LoadedSettings.UnitCost)
             {
                 resources.Value -= GameManager.Instance.LoadedSettings.UnitCost;
-                timer.TimeLeftToSpawn = GameManager.Instance.LoadedSettings.UnitSpawnTime;
                 timer.SpawnsOrdered += 1;
 
                 EntityManager.SetComponentData(selectedBuilding, resources);
