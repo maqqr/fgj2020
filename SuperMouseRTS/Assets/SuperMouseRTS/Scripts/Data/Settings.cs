@@ -61,4 +61,7 @@ public class Settings : ScriptableObject
     public float CircleGrowSpeed = 1.0f;
     public Material LineMaterial;
     public float ArrowHeadLength = 0.5f;
+
+    [Header(" -- Bullets --")]
+    public Material BulletMaterial;
 }

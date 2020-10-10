@@ -17,11 +17,18 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
 {
     public class BulletDrawSystem : SystemBase
     {
+        private ComputeBuffer matrixBuffer;
+
+        private ComputeBuffer argsBuffer;
+        private uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
+
         protected override void OnCreate()
         {
             GameManager.Instance.OnSettingsLoaded += Loaded;
             GameManager.Instance.OnSettingsReloaded += Loaded;
             Enabled = false;
+
+            argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
         }
 
         private void Loaded(Settings obj)
@@ -31,8 +38,7 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
 
         protected override void OnUpdate()
         {
-            Settings settings = GameManager.Instance.LoadedSettings;
-            //List<Matrix4x4> bulletMatrices = new List<Matrix4x4>();
+            Settings settings = GameManager.Instance.LoadedSettings;            
 
             NativeList<UnityEngine.Matrix4x4> bulletMatrices = new NativeList<UnityEngine.Matrix4x4>(Allocator.Temp);
 
@@ -51,6 +57,39 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
 
 
             }).Run();
+
+            // ----------- Drawing -------------
+
+            Mesh instanceMesh = settings.HealthBarMesh;
+            int instanceCount = bulletMatrices.Length;
+            int subMeshIndex = 0;
+
+            if (matrixBuffer != null)
+                matrixBuffer.Release();
+
+            matrixBuffer = new ComputeBuffer(bulletMatrices.Length, sizeof(float) * 4 * 4);
+
+            NativeArray<UnityEngine.Matrix4x4> arr = bulletMatrices.AsArray();
+            matrixBuffer.SetData(arr);
+            settings.BulletMaterial.SetBuffer("matrixBuffer", matrixBuffer);
+
+
+            if (instanceMesh != null)
+            {
+                args[0] = (uint)instanceMesh.GetIndexCount(subMeshIndex);
+                args[1] = (uint)instanceCount;
+                args[2] = (uint)instanceMesh.GetIndexStart(subMeshIndex);
+                args[3] = (uint)instanceMesh.GetBaseVertex(subMeshIndex);
+            }
+            else
+            {
+                args[0] = args[1] = args[2] = args[3] = 0;
+            }
+            argsBuffer.SetData(args);
+
+            Bounds bounds = new Bounds(UnityEngine.Vector3.zero, new UnityEngine.Vector3(100.0f, 100.0f, 100.0f));
+
+            Graphics.DrawMeshInstancedIndirect(instanceMesh, 0, settings.BulletMaterial, bounds, argsBuffer);
 
             //for (int i = 0; i < bulletMatrices.Length; i += 1023)
             //{
