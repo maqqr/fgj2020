@@ -42,6 +42,7 @@ public class GetNearestUnitSystem : JobComponentSystem
                     {
                         nearestUnit.Ally.Entity = OtherUnits[i];
                         nearestUnit.Ally.Direction = OtherPositions[i].Value - translation.Value;
+                        nearestUnit.Ally.Position = OtherPositions[i].Value;
                         bestAllyDist = dist;
                     }
                 }
@@ -51,6 +52,7 @@ public class GetNearestUnitSystem : JobComponentSystem
                     {
                         nearestUnit.Enemy.Entity = OtherUnits[i];
                         nearestUnit.Enemy.Direction = OtherPositions[i].Value - translation.Value;
+                        nearestUnit.Enemy.Position = OtherPositions[i].Value;
                         bestEnemyDist = dist;
                     }
                 }

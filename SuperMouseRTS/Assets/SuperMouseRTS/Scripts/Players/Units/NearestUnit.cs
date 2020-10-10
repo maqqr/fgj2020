@@ -7,6 +7,7 @@ public struct Nearest
 {
     public Entity Entity;
     public float3 Direction;
+    public float3 Position;
 }
 
 [Serializable]

@@ -11,6 +11,7 @@ using System;
 
 namespace Assets.SuperMouseRTS.Scripts.GameWorld
 {
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
     public class WorldDrawingSystem : ComponentSystem
     {
         //[BurstCompile]
