@@ -53,13 +53,22 @@ MonoBehaviour:
   UnitCapacity: 25
   OreHaulSpeedFromDeposit: 3
   UnitRangeOfOperation: 0.4
+  PlayerColors:
+  - {r: 0.8679245, g: 0.12691349, b: 0.12691349, a: 1}
+  - {r: 0.114142045, g: 0.2727775, b: 0.8962264, a: 1}
+  - {r: 0.18614274, g: 0.8396226, b: 0.21669234, a: 1}
+  - {r: 0.8207547, g: 0.51931924, b: 0.15873085, a: 1}
+  ShowHpAlways: 1
   HealthBarMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   HealthBarMaterials:
   - {fileID: 2100000, guid: 0cbbba5b8ac06b1499946a53aca7dc78, type: 2}
   - {fileID: 2100000, guid: 89d4e845d3dd0ef49a373aaf1dd07d60, type: 2}
   - {fileID: 2100000, guid: fb5a0a7d0adb50f4f9718dcde880eb9f, type: 2}
   HealthBarRotation: {x: 120, y: 0, z: 0}
-  UnitHealthBarY: 1
-  BuildingHealthBarY: 1
+  UnitHealthBarY: 0.5
   UnitHealthBarWidth: 0.5
+  BuildingHealthBarY: 1
   BuildingHealthBarWidth: 1.5
+  circleMaterial: {fileID: 2100000, guid: ea475d04045ca8548803ace42534d8d9, type: 2}
+  CircleMaxRadius: 2.2
+  CircleGrowSpeed: 5
