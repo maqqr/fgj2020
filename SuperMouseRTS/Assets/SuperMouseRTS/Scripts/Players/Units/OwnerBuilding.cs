@@ -7,10 +7,10 @@ using Unity.Mathematics;
 [Serializable]
 public struct OwnerBuilding : IComponentData
 {
-    public TilePosition owner;
+    public TilePosition OwnerTile;
 
     public OwnerBuilding(TilePosition owner)
     {
-        this.owner = owner;
+        this.OwnerTile = owner;
     }
 }

@@ -330,12 +330,15 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 {
                     tile.tile = TileContent.Building;
    
-                    float3 ruinsUnityLocation = WorldCoordinateTools.UnityCoordinateAsWorld(pos.Value.x, pos.Value.y);
+                    float3 ruinsUnityLocation = WorldCoordinateTools.WorldToUnityCoordinate(pos.Value.x, pos.Value.y);
+                    Debug.Log($"{pos.Value.x}, {pos.Value.y}");
+                    Debug.Log($"Ruins {ruinsUnityLocation}");
 
                     NativeArray<int> closeOnesCounts = new NativeArray<int>(Players, Allocator.Temp);
 
                     for (int i = 0; i < OtherPositions.Length; i++)
                     {
+                        Debug.Log($"position: {OtherPositions[i].Value}, P{OtherIds[i].Value}");
                         if(math.distance(ruinsUnityLocation, OtherPositions[i].Value) <= TileSize)
                         {
                             closeOnesCounts[OtherIds[i].Value - 1]++;
@@ -380,7 +383,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
                     for (int i = 0; i < PeasantOwners.Length; i++)
                     {
-                        if(math.distance(PeasantOwners[i].owner.Value,pos.Value) < 0.01f)
+                        if(math.distance(PeasantOwners[i].OwnerTile.Value,pos.Value) < 0.01f)
                         {
                             entityCommandBuffer.DestroyEntity(index, PoorPeasants[i]);
                         }

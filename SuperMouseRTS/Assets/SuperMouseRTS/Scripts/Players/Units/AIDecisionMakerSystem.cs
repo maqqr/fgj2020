@@ -42,7 +42,7 @@ namespace Assets.SuperMouseRTS.Scripts.Players.Units
             {
                 for (int i = 0; i < owners.Length; i++)
                 {
-                    if (math.distance(owners[i].Value, owner.owner.Value) < 0.01f)
+                    if (math.distance(owners[i].Value, owner.OwnerTile.Value) < 0.01f)
                     {
                         if (movement.Priority <= Priorities.NotUrgent)
                         {

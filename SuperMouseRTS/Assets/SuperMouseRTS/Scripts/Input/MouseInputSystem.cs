@@ -119,7 +119,7 @@ public class MouseInputSystem : SystemBase
                         playersToReset.Add(item.Id.Value);
                         break;
                     case AIOperation.Attack:
-                        if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
+                        if (owner.OwnerTile.Value.x == item.Position.x && owner.OwnerTile.Value.y == item.Position.y)
                         {
                             unitTarget.Value = new TilePosition() { Value = item.Target };
                             unitTarget.Priority = Priorities.PlayerOrdered;
@@ -130,7 +130,7 @@ public class MouseInputSystem : SystemBase
                     case AIOperation.Collect:
                         break;
                     case AIOperation.Repair:
-                        if (owner.owner.Value.x == item.Position.x && owner.owner.Value.y == item.Position.y)
+                        if (owner.OwnerTile.Value.x == item.Position.x && owner.OwnerTile.Value.y == item.Position.y)
                         {
                             unitTarget.Value = new TilePosition() { Value = item.Target };
                             unitTarget.Priority = Priorities.PlayerOrdered;
