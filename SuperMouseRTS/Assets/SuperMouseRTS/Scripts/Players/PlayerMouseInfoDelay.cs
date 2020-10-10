@@ -12,12 +12,14 @@ namespace Assets.SuperMouseRTS.Scripts.Players
         public float Delay;
         public float DelayConsumed;
         public Entity EntityTargeted;
+        public bool IsShowing;
 
         public PlayerMouseInfoDelay(float delay)
         {
             Delay = delay;
             DelayConsumed = 0;
             EntityTargeted = new Entity();
+            IsShowing = false;
         }
     }
 }
