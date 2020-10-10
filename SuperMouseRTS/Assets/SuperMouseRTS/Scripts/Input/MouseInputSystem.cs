@@ -67,8 +67,6 @@ public class MouseInputSystem : ComponentSystem
 
             if (rightClicked)
             {
-                //UnityEngine.Debug.Log($"Mouse{pointerIndex} right click");
-
                 var unityRay = UnityEngine.Camera.main.ScreenPointToRay(pointer.ScreenPosition);
                 var ray = new RaycastInput() { Origin = unityRay.origin, Direction = unityRay.direction.normalized * 1000.0f };
 

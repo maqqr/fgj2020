@@ -20,7 +20,7 @@ public class CombatSystem : JobComponentSystem
     [BurstCompile]
     struct CombatSystemJob : IJobForEachWithEntity<MovementSpeed, OperationCapability, NearestUnit>
     {
-        public EntityCommandBuffer.Concurrent CommandBuffer;
+        public EntityCommandBuffer.ParallelWriter CommandBuffer;
         public float DeltaTime;
 
         public void Execute(Entity ent, int index, ref MovementSpeed speed, ref OperationCapability capability, [ReadOnly] ref NearestUnit nearest)
@@ -58,7 +58,7 @@ public class CombatSystem : JobComponentSystem
     {
         var job = new CombatSystemJob()
         {
-            CommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent(),
+            CommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter(),
             DeltaTime = Time.DeltaTime,
         };
 

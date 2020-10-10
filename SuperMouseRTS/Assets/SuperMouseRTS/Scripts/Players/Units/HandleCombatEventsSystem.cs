@@ -14,7 +14,7 @@ public class HandleCombatEventsSystem : JobComponentSystem
     struct HandleCombatEventsSystemJob : IJobForEachWithEntity<DamageEvent>
     {
         public uint InitialSeed;
-        public EntityCommandBuffer.Concurrent CommandBuffer;
+        public EntityCommandBuffer.ParallelWriter CommandBuffer;
 
         public void Execute(Entity ent, int index, ref DamageEvent ev)
         {
@@ -41,7 +41,7 @@ public class HandleCombatEventsSystem : JobComponentSystem
         var job = new HandleCombatEventsSystemJob()
         {
             InitialSeed = seed++,
-            CommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            CommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
         };
 
 

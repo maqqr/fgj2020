@@ -25,7 +25,7 @@ public class UnitAISystem : JobComponentSystem
     struct UnitAISystemJob : IJobForEachWithEntity<Translation, MovementSpeed, UnitTarget, OreCapacity, OwnerBuilding, OperationCapability>
     {
         public EntityArchetype oreEventArchetype;
-        public EntityCommandBuffer.Concurrent entityCommandBuffer;
+        public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
 
         public float deltaTime;
         public float speed;
@@ -127,7 +127,7 @@ public class UnitAISystem : JobComponentSystem
             oreEventArchetype = this.oreEvent,
             deltaTime = Time.DeltaTime,
             speed = GameManager.MOVEMENT_SPEED,
-            entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+            entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
         };
 
         // Now that the job is set up, schedule it to be run. 

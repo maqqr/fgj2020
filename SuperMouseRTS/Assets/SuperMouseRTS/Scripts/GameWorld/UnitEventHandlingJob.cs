@@ -13,7 +13,7 @@ struct UnitEventHandlingSystemJob<T> : IJobForEachWithEntity<UnitEvent, T, TileP
     public NativeArray<int> tiles;
     public int tilesVertically;
 
-    public EntityCommandBuffer.Concurrent entityCommandBuffer;
+    public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
 
     public void Execute(Entity ent, int index, [ReadOnly] ref UnitEvent ev, [ReadOnly] ref T resource, [ReadOnly] ref TilePosition pos)
     {

@@ -38,7 +38,7 @@ public class UnitEventHandlingSystem : JobComponentSystem
 
         var unitTotalCountingSystem = new UnitEventHandlingSystemJob<T>()
         {
-            entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent(),
+            entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().AsParallelWriter(),
             tiles = resourceChanges,
             tilesVertically = GameManager.Instance.LoadedSettings.TilesVertically
         };

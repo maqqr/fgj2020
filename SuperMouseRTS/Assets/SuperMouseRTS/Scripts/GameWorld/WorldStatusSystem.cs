@@ -279,7 +279,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         [BurstCompile]
         struct RemoveEmptyResourceJob : IJobForEachWithEntity<Tile, TilePosition, OreHaulable, OreResources>
         {
-            public EntityCommandBuffer.Concurrent entityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
             public void Execute(Entity ent, int index, ref Tile tile, [ReadOnly] ref TilePosition pos, [ReadOnly] ref OreHaulable tag, ref OreResources res)
             {
                 if(res.Value <= 0)
@@ -308,7 +308,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             [ReadOnly]
             public int StartingResources;
 
-            public EntityCommandBuffer.Concurrent concurrentBuffer;
+            public EntityCommandBuffer.ParallelWriter concurrentBuffer;
             public void Execute(Entity ent, int index, ref Tile tile, [ReadOnly] ref TilePosition pos, [ReadOnly] ref Health health)
             {
 
@@ -348,7 +348,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
         [BurstCompile]
         struct RuinateBuildingJob : IJobForEachWithEntity<PlayerID, Health, Tile, TilePosition>
         {
-            public EntityCommandBuffer.Concurrent entityCommandBuffer;
+            public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
             [ReadOnly, DeallocateOnJobCompletion]
             public NativeArray<Entity> PoorPeasants;
             [ReadOnly, DeallocateOnJobCompletion]
@@ -409,7 +409,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
 
             var removeResourcesJob = new RemoveEmptyResourceJob
             {
-                entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+                entityCommandBuffer = this.entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
             };
 
             var unitEntityArray = allUnitsQuery.ToEntityArray(Allocator.TempJob);
@@ -425,7 +425,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
                 Players = settings.Players,
                 TileSize = GameManager.TILE_SIZE,
                 StartingResources = settings.StartingResources,
-                concurrentBuffer = this.entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+                concurrentBuffer = this.entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
             };
 
             inputDependencies = removeResourcesJob.Schedule(this, inputDependencies);
@@ -436,7 +436,7 @@ namespace Assets.SuperMouseRTS.Scripts.GameWorld
             {
                 PoorPeasants = unitEntityArray,
                 PeasantOwners = owners,
-                entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent()
+                entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter()
             };
             inputDependencies = ruinateBuildingJob.Schedule(this, inputDependencies);
 

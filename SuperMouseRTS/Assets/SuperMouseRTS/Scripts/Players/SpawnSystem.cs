@@ -46,7 +46,7 @@ public class SpawnSystem : JobComponentSystem
         public int capacity;
         [ReadOnly]
         public float rangeOfOperation;
-        public EntityCommandBuffer.Concurrent entityCommandBuffer;
+        public EntityCommandBuffer.ParallelWriter entityCommandBuffer;
 
         public float UnitSpawnTime;
 
@@ -94,7 +94,7 @@ public class SpawnSystem : JobComponentSystem
         var job = new SpawnSystemJob();
 
         job.deltaTime = Time.DeltaTime;
-        job.entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().ToConcurrent();
+        job.entityCommandBuffer = entityCommandBuffer.CreateCommandBuffer().AsParallelWriter();
         job.arch = archetype;
         job.capacity = GameManager.Instance.LoadedSettings.UnitCapacity;
         job.health = GameManager.Instance.LoadedSettings.UnitHealth;
