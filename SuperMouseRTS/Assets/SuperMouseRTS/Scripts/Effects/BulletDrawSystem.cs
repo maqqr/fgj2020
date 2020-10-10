@@ -27,6 +27,8 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
         private const int maxBulletCount = 100000;
         private Mesh instanceMesh;
 
+        private EntityQuery query;
+
         protected override void OnCreate()
         {
             GameManager.Instance.OnSettingsLoaded += Loaded;
@@ -44,18 +46,11 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
             Settings settings = GameManager.Instance.LoadedSettings;
             instanceMesh = settings.HealthBarMesh;
 
-            if (instanceMesh != null)
-            {
-                int subMeshIndex = 0;
-                args[0] = instanceMesh.GetIndexCount(subMeshIndex);
-                args[1] = 0;
-                args[2] = instanceMesh.GetIndexStart(subMeshIndex);
-                args[3] = instanceMesh.GetBaseVertex(subMeshIndex);
-            }
-            else
-            {
-                args[0] = args[1] = args[2] = args[3] = 0;
-            }
+            int subMeshIndex = 0;
+            args[0] = instanceMesh.GetIndexCount(subMeshIndex);
+            args[1] = 0;
+            args[2] = instanceMesh.GetIndexStart(subMeshIndex);
+            args[3] = instanceMesh.GetBaseVertex(subMeshIndex);
         }
 
         protected override void OnUpdate()
@@ -64,9 +59,13 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
             const float bulletLength = 0.25f;
             Settings settings = GameManager.Instance.LoadedSettings;
 
-            NativeList<UnityEngine.Matrix4x4> bulletMatrices = new NativeList<UnityEngine.Matrix4x4>(Allocator.Temp);
+            int entityCount = query.CalculateEntityCount();
+            NativeArray<UnityEngine.Matrix4x4> bulletMatrices = new NativeArray<UnityEngine.Matrix4x4>(entityCount, Allocator.Temp);
 
-            Entities.WithAll<Bullet>().ForEach((in Translation translation, in MovementSpeed speed) =>
+
+            Entities
+                .WithStoreEntityQueryInField(ref query)
+                .WithAll<Bullet>().ForEach((int entityInQueryIndex, in Translation translation, in MovementSpeed speed) =>
             {
                 if (bulletMatrices.Length < maxBulletCount)
                 {
@@ -79,27 +78,22 @@ namespace Assets.SuperMouseRTS.Scripts.Effects
                                         * UnityEngine.Matrix4x4.Rotate(rot)
                                         * UnityEngine.Matrix4x4.Scale(new UnityEngine.Vector3(bulletLength, bulletThickness, bulletThickness));
 
-                    bulletMatrices.Add(matrix);
+                    bulletMatrices[entityInQueryIndex] = matrix;
                 }
 
             }).Run();
 
-            // ----------- Drawing -------------
-
-            int instanceCount = bulletMatrices.Length;
-
-            Debug.Log($"Bullet count {instanceCount}");
-
-            NativeArray<UnityEngine.Matrix4x4> arr = bulletMatrices.AsArray();
-            matrixBuffer.SetData(arr);
+            matrixBuffer.SetData(bulletMatrices);
             settings.BulletMaterial.SetBuffer("matrixBuffer", matrixBuffer);
 
-            args[1] = (uint)instanceCount;
+            args[1] = (uint)bulletMatrices.Length;
             argsBuffer.SetData(args);
 
             Bounds bounds = new Bounds(UnityEngine.Vector3.zero, new UnityEngine.Vector3(100.0f, 100.0f, 100.0f));
 
             Graphics.DrawMeshInstancedIndirect(instanceMesh, 0, settings.BulletMaterial, bounds, argsBuffer);
+
+            bulletMatrices.Dispose();
         }
     }
 }
