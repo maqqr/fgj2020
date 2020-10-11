@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.Entities;
-using UnityEditor.ShaderGraph.Internal;
 
 namespace Assets.SuperMouseRTS.Scripts.Players
 {
