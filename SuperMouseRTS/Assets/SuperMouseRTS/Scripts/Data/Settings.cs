@@ -72,4 +72,7 @@ public class Settings : ScriptableObject
     public GameObject UnitDeathEffectPrefab;
     public float ExplosionSize = 0.05f;
 
+    [Header(" -- Camera control --")]
+    public float CameraMoveSpeed = 1.0f;
+    public float CameraZoomSpeed = 1.0f;
 }

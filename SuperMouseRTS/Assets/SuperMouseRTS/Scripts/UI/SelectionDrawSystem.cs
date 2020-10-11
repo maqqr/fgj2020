@@ -13,20 +13,20 @@ using Assets.SuperMouseRTS.Scripts.GameWorld;
 using Unity.Assertions;
 using System.ComponentModel;
 
+public static class RandomExtensions
+{
+    public static void Deconstruct<T1, T2>(this KeyValuePair<T1, T2> tuple, out T1 key, out T2 value)
+    {
+        // Available in .NET Core 2.0 and upwards. This method could be moved elsewhere.
+        // Required for deconstructing KeyValuePairs in foreach loops.
+
+        key = tuple.Key;
+        value = tuple.Value;
+    }
+}
+
 namespace Assets.SuperMouseRTS.Scripts.UI
 {
-    public static class RandomExtensions
-    {
-        public static void Deconstruct<T1, T2>(this KeyValuePair<T1, T2> tuple, out T1 key, out T2 value)
-        {
-            // Available in .NET Core 2.0 and upwards. This method could be moved elsewhere.
-            // Required for deconstructing KeyValuePairs in foreach loops.
-
-            key = tuple.Key;
-            value = tuple.Value;
-        }
-    }
-
     [UpdateInGroup(typeof(PresentationSystemGroup)), AlwaysUpdateSystem]
     public class SelectionDrawSystem : SystemBase
     {
