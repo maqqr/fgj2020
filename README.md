@@ -1,5 +1,6 @@
 # Super RTS
-Finnish Game Jam 2020
+
+[Download post-jam Windows build here](https://github.com/maqqr/fgj2020/releases/tag/v1.0)
 
 Game started at Finnish Game Jam 2020 in February and updated in October 2020.
 Original code using ECS ~0.6 and new code with 0.14
