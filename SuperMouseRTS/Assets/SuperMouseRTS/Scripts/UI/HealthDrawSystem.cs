@@ -37,13 +37,13 @@ namespace Assets.SuperMouseRTS.Scripts.UI
             healthBarMaterials = GameManager.Instance.LoadedSettings.HealthBarMaterials;
         }
 
-        private Matrix4x4 makeBar(Vector3 worldSpacePosition, float width)
+        private Matrix4x4 makeBar(Vector3 worldSpacePosition, float width, float height = 0.1f)
         {
             Vector3 healthBarRot = GameManager.Instance.LoadedSettings.HealthBarRotation;
 
             return Matrix4x4.Translate(worldSpacePosition)
                    * Matrix4x4.Rotate(Quaternion.Euler(healthBarRot.x, healthBarRot.y, healthBarRot.z))
-                   * Matrix4x4.Scale(new Vector3(width, 0.1f, 0.1f));
+                   * Matrix4x4.Scale(new Vector3(width, height, height));
         }
 
         void addBar(Dictionary<int, List<Matrix4x4>> hpBarMatrices, in PlayerID playerId, in Matrix4x4 matrix)
@@ -63,22 +63,24 @@ namespace Assets.SuperMouseRTS.Scripts.UI
             float buildingHealthBarY = GameManager.Instance.LoadedSettings.BuildingHealthBarY;
             float unitHealthBarWidth = GameManager.Instance.LoadedSettings.UnitHealthBarWidth;
             float buildingHealthBarWidth = GameManager.Instance.LoadedSettings.BuildingHealthBarWidth;
+            float buildingHealthBarHeight = GameManager.Instance.LoadedSettings.BuildingHealthBarHeight;
 
             float hpAmount = Mathf.Sin((float)Time.ElapsedTime);
 
             Dictionary<int, List<Matrix4x4>> hpBarMatrices = new Dictionary<int, List<Matrix4x4>>();
 
+            // Note: commented out for now because units health doesn't work
             // Get hp bar from units
-            Entities.ForEach((in Translation translation, in Health health, in PlayerID playerId) =>
-            {
-                if (showHpAlways || health.Value < health.Maximum)
-                {
-                    var width = (health.Value / (float)health.Maximum) * unitHealthBarWidth;
-                    var barMatrix = makeBar(translation.Value + float3(0f, healthBarY, 0.0f), width);
-                    addBar(hpBarMatrices, playerId, barMatrix);
-                }
+            //Entities.ForEach((in Translation translation, in Health health, in PlayerID playerId) =>
+            //{
+            //    if (showHpAlways || health.Value < health.Maximum)
+            //    {
+            //        var width = (health.Value / (float)health.Maximum) * unitHealthBarWidth;
+            //        var barMatrix = makeBar(translation.Value + float3(0f, healthBarY, 0.0f), width);
+            //        addBar(hpBarMatrices, playerId, barMatrix);
+            //    }
 
-            }).WithoutBurst().Run();
+            //}).WithoutBurst().Run();
 
             // Get hp bar from owned buildings
             Entities.WithAll<Tile>().ForEach((in TilePosition tilePosition, in Health health, in PlayerID playerId) =>
@@ -88,7 +90,7 @@ namespace Assets.SuperMouseRTS.Scripts.UI
                     var position = WorldCoordinateTools.WorldToUnityCoordinate(tilePosition.Value);
 
                     var width = (health.Value / (float)health.Maximum) * buildingHealthBarWidth;
-                    var barMatrix = makeBar(position + float3(0f, buildingHealthBarY, 0.0f), width);
+                    var barMatrix = makeBar(position + float3(0f, buildingHealthBarY, 0.0f), width, buildingHealthBarHeight);
                     addBar(hpBarMatrices, playerId, barMatrix);
                 }
 
@@ -102,7 +104,7 @@ namespace Assets.SuperMouseRTS.Scripts.UI
                     var position = WorldCoordinateTools.WorldToUnityCoordinate(tilePosition.Value);
 
                     var width = (health.Value / (float)health.Maximum) * buildingHealthBarWidth;
-                    var barMatrix = makeBar(position + float3(0f, buildingHealthBarY, 0.0f), width);
+                    var barMatrix = makeBar(position + float3(0f, buildingHealthBarY, 0.0f), width, buildingHealthBarHeight);
 
                     var unowned = new PlayerID { Value = 0 };
                     addBar(hpBarMatrices, unowned, barMatrix);

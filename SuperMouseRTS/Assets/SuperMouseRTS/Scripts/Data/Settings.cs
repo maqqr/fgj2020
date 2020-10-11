@@ -57,6 +57,7 @@ public class Settings : ScriptableObject
     [Header(" -- Building health bar settings --")]
     public float BuildingHealthBarY = 1.0f;
     public float BuildingHealthBarWidth = 1.5f;
+    public float BuildingHealthBarHeight = 0.3f;
 
     [Header(" -- Selection GUI stuff --")]
     public Material circleMaterial;

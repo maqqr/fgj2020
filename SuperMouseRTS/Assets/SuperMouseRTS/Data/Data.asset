@@ -58,6 +58,8 @@ MonoBehaviour:
   UnitCapacity: 25
   OreHaulSpeedFromDeposit: 3
   UnitRangeOfOperation: 0.4
+  PassiveOreGenerationAmount: 5
+  PassiveOreGenerationInterval: 4
   PlayerColors:
   - {r: 0.8679245, g: 0.12691349, b: 0.12691349, a: 1}
   - {r: 0.114142045, g: 0.2727775, b: 0.8962264, a: 1}
@@ -76,6 +78,7 @@ MonoBehaviour:
   UnitHealthBarWidth: 0.5
   BuildingHealthBarY: 1
   BuildingHealthBarWidth: 1.5
+  BuildingHealthBarHeight: 0.3
   circleMaterial: {fileID: 2100000, guid: ea475d04045ca8548803ace42534d8d9, type: 2}
   CircleMaxRadius: 2.2
   CircleGrowSpeed: 5
@@ -85,3 +88,7 @@ MonoBehaviour:
   UnitDeathEffectPrefab: {fileID: 100000, guid: 4c5a17ca1f9fec84e941441ebb8be079,
     type: 3}
   ExplosionSize: 0.15
+  CameraMoveSpeed: 60
+  CameraMaxMoveSpeed: 10
+  CameraDamping: 3
+  CameraZoomSpeed: 20
