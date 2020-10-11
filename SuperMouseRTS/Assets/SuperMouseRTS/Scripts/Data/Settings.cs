@@ -74,5 +74,8 @@ public class Settings : ScriptableObject
 
     [Header(" -- Camera control --")]
     public float CameraMoveSpeed = 1.0f;
+    public float CameraMaxMoveSpeed = 5.0f;
+    public float CameraDamping = 0.8f;
+
     public float CameraZoomSpeed = 1.0f;
 }

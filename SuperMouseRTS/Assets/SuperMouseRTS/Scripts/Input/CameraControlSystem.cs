@@ -54,7 +54,8 @@ namespace Assets.SuperMouseRTS.Scripts.Input
             EntityManager.AddComponent<MovementSpeed>(cameraEntity);
             EntityManager.AddComponent<Translation>(cameraEntity);
 
-            EntityManager.SetComponentData(cameraEntity, new Camera() { DistanceToGround = 10.0f });
+            EntityManager.SetComponentData(cameraEntity, new Camera() { DistanceToGround = 24.0f });
+            EntityManager.SetComponentData(cameraEntity, new Translation() { Value = float3(15.0f, 0.0f, 17.0f) });
         }
 
         private void Loaded(Settings obj)
@@ -70,15 +71,28 @@ namespace Assets.SuperMouseRTS.Scripts.Input
             Entities.ForEach((ref Translation translation, ref MovementSpeed speed, ref Camera camera) =>
             {
                 // Camera movement
-                speed.Value = float2(0, 0);
+                float2 acceleration = float2(0, 0);
                 foreach (var (keyCode, moveVector) in moveKeyBinds)
                 {
                     if (UnityEngine.Input.GetKey(keyCode))
                     {
-                        speed.Value += moveVector * settings.CameraMoveSpeed;
+                        acceleration += moveVector;
                     }
                 }
-                speed.Value = math.normalizesafe(speed.Value);
+
+                if (math.length(acceleration) > 1.0f)
+                {
+                    acceleration = math.normalize(acceleration);
+                }
+                acceleration *= settings.CameraMoveSpeed;
+
+                speed.Value += acceleration * deltaTime;
+                speed.Value += -speed.Value * settings.CameraDamping * deltaTime;
+
+                if (math.length(speed.Value) > settings.CameraMaxMoveSpeed)
+                {
+                    speed.Value = math.normalize(speed.Value) * settings.CameraMaxMoveSpeed;
+                }
                 translation.Value += float3(speed.Value.x, 0.0f, speed.Value.y) * deltaTime;
 
                 // Camera zoom
@@ -91,7 +105,13 @@ namespace Assets.SuperMouseRTS.Scripts.Input
                     }
                 }
 
+                Debug.Log(UnityEngine.Input.mouseScrollDelta);
+
+                zoomSpeed += UnityEngine.Input.mouseScrollDelta.y * zoomSpeed;
+
                 camera.DistanceToGround += zoomSpeed * deltaTime;
+
+                camera.DistanceToGround = math.clamp(camera.DistanceToGround, 3.0f, 30.0f);
 
             }).WithoutBurst().Run();
 
